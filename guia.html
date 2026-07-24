@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NeuroAvalia — Guia de Teste</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; 
+       line-height:1.6; color:#1a1a1a; background:#f7f8f8; padding:20px; }
+.container { max-width:720px; margin:0 auto; background:white; 
+             padding:40px; border-radius:12px; box-shadow:0 2px 12px rgba(0,0,0,.08); }
+h1 { font-size:26px; margin:20px 0 12px; color:#0a3d62; }
+h2 { font-size:20px; margin:24px 0 10px; color:#0a3d62; border-bottom:2px solid #e1e8ed; padding-bottom:6px; }
+h3 { font-size:16px; margin:18px 0 8px; color:#0a3d62; }
+p { margin:8px 0; }
+ul, ol { margin:8px 0 8px 24px; }
+li { margin:4px 0; }
+.checklist { list-style:none; margin-left:8px; }
+.checklist li { margin:6px 0; }
+code { background:#f0f4f8; padding:2px 6px; border-radius:3px; 
+        font-family:ui-monospace,Menlo,monospace; font-size:13px; }
+pre { background:#0f1011; color:#d0d6e0; padding:16px; border-radius:8px; 
+       overflow-x:auto; margin:12px 0; }
+pre code { background:none; color:inherit; padding:0; }
+hr { border:none; border-top:1px solid #e1e8ed; margin:24px 0; }
+strong { color:#0a3d62; }
+.url-box { background:#e8f5e9; border:1px solid #4caf50; border-radius:8px; 
+           padding:16px; margin:16px 0; text-align:center; }
+.url-box a { color:#2e7d32; font-size:18px; font-weight:bold; word-break:break-all; }
+.warning { background:#fff3cd; border:1px solid #ffc107; border-radius:8px; 
+           padding:12px 16px; margin:12px 0; }
+.warning strong { color:#856404; }
+@media print { body { background:white; padding:0; } .container { box-shadow:none; } }
+@media(max-width:600px) { .container { padding:20px; } h1 { font-size:22px; } }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="url-box">
+<strong>URL de acesso:</strong><br>
+<a href="https://andremaiaone.github.io/neuroavalia-app/">https://andremaiaone.github.io/neuroavalia-app/</a>
+</div>
+<h1>Guia de Teste — NeuroAvalia</h1>
+
+<p><strong>URL para acesso:</strong> https://andremaiaone.github.io/neuroavalia-app/</p>
+
+<hr>
+
+<h2>O que é</h2>
+
+<p>Protótipo de uma plataforma de correção de testes neuropsicológicos. Este é um <strong>MVP para validação</strong> — não é produto final. O objetivo deste teste é coletar sua opinião sobre se o fluxo faz sentido para o uso clínico real.</p>
+
+<hr>
+
+<h2>⚠️ Antes de começar — importante</h2>
+
+<p>1. <strong>NÃO use dados reais de pacientes.</strong> Use casos sintéticos ou anonimizados (só escores brutos, sem nome/CPF). Esta é uma versão de teste sem criptografia de dados.</p>
+<p>2. <strong>As normas são brasileiras</strong> (CFP 31/2022), mas alguns testes estão marcados como "Em validação" (badge amarelo) — a fonte ainda está sendo confirmada.</p>
+<p>3. <strong>O Wisconsin (WCST-48)</strong> está marcado em vermelho porque usa normas italianas na versão original da planilha — não confie no resultado dele ainda.</p>
+
+<hr>
+
+<h2>O que testar (roteiro)</h2>
+
+<h3>1. Fluxo básico (10 min)</h3>
+<ul class="checklist">
+<li><input type="checkbox" disabled> Preencha dados de um paciente fictício (nome, data nascimento, sexo, escolaridade)</li>
+<li><input type="checkbox" disabled> Selecione **WISC-IV** no centro</li>
+<li><input type="checkbox" disabled> Preencha os escores brutos dos subtestes</li>
+<li><input type="checkbox" disabled> Clique em **Calcular**</li>
+<li><input type="checkbox" disabled> Verifique se o resultado (QI, percentil, classificação) faz sentido clínico</li>
+</ul>
+<h3>2. Validar limites (5 min) — o teste mais importante</h3>
+<ul class="checklist">
+<li><input type="checkbox" disabled> Tente digitar um valor impossível (ex: 50 num campo que aceita até 32)</li>
+<li><input type="checkbox" disabled> **O que acontece?** Deveria barrar ou avisar. Se deixar passar, é um bug a reportar.</li>
+<li><input type="checkbox" disabled> Deixe um campo obrigatório em branco e calcule — deveria avisar</li>
+</ul>
+<h3>3. Explorar categorias (5 min)</h3>
+<ul class="checklist">
+<li><input type="checkbox" disabled> Clique nos chips de categoria (Memória, Atenção, Função Executiva...)</li>
+<li><input type="checkbox" disabled> Veja se a lista de testes faz sentido clínico</li>
+<li><input type="checkbox" disabled> Teste um teste que você usa muito na prática (RAVLT, Stroop, Trilhas...)</li>
+</ul>
+<h3>4. Conferir resultados contra cálculo manual (15 min)</h3>
+<ul class="checklist">
+<li><input type="checkbox" disabled> Pegue um caso real que você já corrigiu manualmente</li>
+<li><input type="checkbox" disabled> Digite os escores no protótipo</li>
+<li><input type="checkbox" disabled> **Compare o resultado com o que você calculou no papel/planilha**</li>
+<li><input type="checkbox" disabled> Anote qualquer divergência — isto é o feedback mais valioso</li>
+</ul>
+<hr>
+
+<h2>Feedback que precisamos (roteiro de perguntas)</h2>
+
+<p>Copie este bloco, responda e mande de volta:</p>
+
+<pre><code>FEEDBACK — NeuroAvalia
+======================
+Nome: (opcional)
+Data do teste:
+
+1. FLUXO GERAL
+   - O preenchimento é intuitivo? (sim/não)
+   - O que atrapalhou ou confundiu?
+   - Quanto tempo levou para calcular um teste?
+
+2. CAMPOS DE ENTRADA
+   - Os campos/nomes fazem sentido clínico? (ex: &quot;Semelhanças&quot;, &quot;A1&quot;)
+   - Os limites (min/max) estão corretos para os testes que você usa?
+   - Faltou algum campo importante em algum teste?
+
+3. RESULTADOS
+   - As classificações bateram com seu cálculo manual?
+   - Para quais testes? (liste)
+   - Se divergiu, qual foi o erro?
+
+4. TESTES
+   - Quais testes você usa que NÃO estão na lista?
+   - Quais você NÃO usa e poderiam ser removidos?
+   - O badge de status (verde/amarelo/vermelho) ajuda ou atrapalha?
+
+5. USO REAL
+   - Você usaria isto no dia a dia? (sim/não/talvez)
+   - O que falta para ser útil de verdade?
+   - Quanto pagaria por mês por uma ferramenta assim?
+
+6. PROBLEMAS TÉCNICOS
+   - Travou em algum momento?
+   - Algum teste não calculou?
+   - Algum resultado absurdo?</code></pre>
+
+<hr>
+
+<h2>Sobre os dados</h2>
+
+<ul>
+<li>**49 testes** disponíveis no protótipo</li>
+<li>**29 com normas brasileiras confirmadas** (badge verde)</li>
+<li>**11 em validação** (badge amarelo) — fontes sendo confirmadas</li>
+<li>**5 pendentes** (badge cinza)</li>
+<li>**1 bloqueado** (Wisconsin — normas estrangeiras)</li>
+</ul>
+<p>As tabelas normativas são reais, extraídas da planilha PsychoSys V3.7.2 e validadas contra os manuais técnicos dos autores.</p>
+
+<hr>
+
+<h2>Contato para feedback</h2>
+
+<p>Mande o feedback preenchido para quem te passou este link.</p>
+<p>Toda crítica é bem-vinda — especialmente sobre erros de cálculo.</p>
+
+</div>
+</body>
+</html>
