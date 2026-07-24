@@ -1,0 +1,18 @@
+# PROTEÇÃO — nunca commitar estes arquivos no repo público
+manuais_ocr/
+*_tab_conversao_mestra.json
+schemas_validacao_completo.json
+schemas_lancamento.json
+classificacao_testes.json
+catalogo_47_testes.json
+ESPECIFICACAO_VALIDACAO.md
+*.xlsm
+*.xlsx
+*.pdf
+.DS_Store
+
+# Só estes vão para público:
+!index.html
+!README.md
+!schemas.json
+!GUIA_TESTE_NEUROPSICOLOGAS.md
