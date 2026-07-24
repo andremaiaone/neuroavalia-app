@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PsychoSys — Plataforma de Correção Neuropsicológica</title>
+<style>
+  /* ============================================================
+     PALETA E TOKENS DE DESIGN  (petróleo / cyan / cinza)
+     ============================================================ */
+  :root{
+    --bg-grad-1:#e6edf3; --bg-grad-2:#f3f6fa;
+    --surface:#ffffff; --surface-2:#f8fafc; --surface-3:#f1f5f9;
+    --border:#e2e8f0; --border-strong:#cbd5e1;
+    --ink:#0f172a; --ink-2:#334155; --ink-3:#64748b; --ink-4:#94a3b8;
+    --primary:#0f766e; --primary-700:#115e59; --primary-050:#ecfdf5;
+    --accent:#0891b2;
+    --shadow-sm:0 1px 2px rgba(15,23,42,.06),0 1px 3px rgba(15,23,42,.04);
+    --shadow-md:0 4px 16px rgba(15,23,42,.08),0 2px 6px rgba(15,23,42,.05);
+    --shadow-lg:0 12px 32px rgba(15,23,42,.12),0 4px 12px rgba(15,23,42,.06);
+    --radius:14px; --radius-sm:9px;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,"Apple Color Emoji",sans-serif;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;padding:0;}
+  body{
+    font-family:var(--font);color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 100% -10%,#dff3f0 0%,rgba(223,243,240,0) 55%),
+      radial-gradient(1000px 500px at -10% 0%,#e0edf7 0%,rgba(224,237,247,0) 50%),
+      linear-gradient(180deg,var(--bg-grad-1),var(--bg-grad-2));
+    min-height:100vh;-webkit-font-sm-smoothing:antialiased;font-size:14px;line-height:1.5;
+  }
+  /* HEADER */
+  header.app{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.82);
+    backdrop-filter:saturate(160%) blur(10px);-webkit-backdrop-filter:saturate(160%) blur(10px);
+    border-bottom:1px solid var(--border);}
+  .app-inner{max-width:1500px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:16px;}
+  .logo{display:flex;align-items:center;gap:11px;}
+  .logo-mark{width:38px;height:38px;border-radius:11px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px rgba(15,118,110,.35);}
+  .brand-name{font-weight:700;font-size:17px;letter-spacing:-.2px;color:var(--ink);}
+  .brand-name b{color:var(--primary);}
+  .brand-sub{font-size:11.5px;color:var(--ink-3);margin-top:-1px;}
+  .app-spacer{flex:1;}
+  .header-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .pill{font-size:11px;font-weight:600;padding:5px 10px;border-radius:999px;
+    background:var(--primary-050);color:var(--primary-700);border:1px solid #b8e7d6;
+    display:inline-flex;align-items:center;gap:6px;}
+  .pill.blue{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
+  .pill.slate{background:#f1f5f9;color:#475569;border-color:#e2e8f0;}
+  .pill.amber{background:#fffbeb;color:#b45309;border-color:#fde68a;}
+  .pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  /* LAYOUT */
+  main{max-width:1500px;margin:0 auto;padding:22px 22px 6px;}
+  .grid{display:grid;grid-template-columns:minmax(280px,300px) minmax(0,1.05fr) minmax(0,1fr);
+    gap:18px;align-items:start;}
+  @media(max-width:1100px){.grid{grid-template-columns:1fr;}}
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-sm);overflow:hidden;}
+  .card-head{padding:15px 18px 13px;border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#fcfdff,#f8fafc);}
+  .card-head h2{margin:0;font-size:13.5px;font-weight:700;color:var(--ink);letter-spacing:.2px;
+    display:flex;align-items:center;gap:8px;}
+  .card-head .kicker{font-size:11px;color:var(--ink-3);font-weight:500;margin-top:3px;}
+  .card-body{padding:16px 18px 18px;}
+  .step-num{width:21px;height:21px;border-radius:6px;
+    background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;
+    font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 5px rgba(15,118,110,.4);}
+  /* FORM */
+  .field{margin-bottom:13px;} .field:last-child{margin-bottom:0;}
+  label.lbl{display:block;font-size:11.5px;font-weight:600;color:var(--ink-2);margin:0 0 5px 2px;letter-spacing:.1px;}
+  .lbl .opt{color:var(--ink-4);font-weight:500;}
+  input[type=text],input[type=date],input[type=number],select{
+    width:100%;padding:9px 11px;font-size:13.5px;font-family:inherit;color:var(--ink);
+    background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--radius-sm);
+    transition:border-color .15s,box-shadow .15s,background .15s;-webkit-appearance:none;appearance:none;}
+  input:focus,select:focus{outline:none;border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(15,118,110,.16);background:#fff;}
+  input::placeholder{color:var(--ink-4);}
+  select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%2364748b' d='M2 4l4 4 4-4z'/></svg>");
+    background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .idade-box{display:flex;align-items:center;gap:10px;margin-top:8px;padding:9px 12px;
+    background:var(--primary-050);border:1px solid #b8e7d6;border-radius:var(--radius-sm);}
+  .idade-box .icon{width:30px;height:30px;border-radius:8px;background:#fff;display:flex;
+    align-items:center;justify-content:center;color:var(--primary);border:1px solid #b8e7d6;flex:none;}
+  .idade-box .txt{font-size:12.5px;color:var(--primary-700);}
+  .idade-box .txt b{font-size:15px;} .idade-box .txt span{color:var(--ink-3);}
+  /* BOTÕES */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:11px 16px;font-size:13.5px;font-weight:600;font-family:inherit;
+    border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;
+    transition:transform .06s,box-shadow .15s,background .15s,border-color .15s,opacity .15s;
+    user-select:none;white-space:nowrap;} .btn:active{transform:translateY(1px);}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-700));color:#fff;
+    box-shadow:0 6px 14px rgba(15,118,110,.32);}
+  .btn-primary:hover{box-shadow:0 8px 18px rgba(15,118,110,.42);}
+  .btn-accent{background:linear-gradient(135deg,var(--accent),#0e7490);color:#fff;
+    box-shadow:0 6px 14px rgba(8,145,178,.30);} .btn-accent:hover{box-shadow:0 8px 18px rgba(8,145,178,.42);}
+  .btn-ghost{background:#fff;color:var(--ink-2);border-color:var(--border-strong);}
+  .btn-ghost:hover{background:var(--surface-3);border-color:var(--ink-4);}
+  .btn-block{width:100%;} .btn:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;}
+  /* BUSCA / FILTROS */
+  .search-box{position:relative;margin-bottom:12px;}
+  .search-box input{padding-left:34px;}
+  .search-box .s-ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-4);}
+  .chips-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .cat-chip{font-size:11px;font-weight:600;padding:5px 11px;border-radius:999px;
+    background:#fff;border:1px solid var(--border-strong);color:var(--ink-2);cursor:pointer;
+    transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+  .cat-chip:hover{border-color:var(--primary);color:var(--primary);}
+  .cat-chip.active{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:0 3px 8px rgba(15,118,110,.3);}
+  .cat-chip .cnt{font-size:9.5px;font-weight:700;background:rgba(0,0,0,.08);padding:1px 5px;border-radius:8px;}
+  .cat-chip.active .cnt{background:rgba(255,255,255,.25);}
+  /* LISTA ROLÁVEL DE TESTES */
+  .test-list{max-height:330px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);
+    background:var(--surface-2);}
+  .test-list::-webkit-scrollbar{width:8px;}
+  .test-list::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px;}
+  .test-item{padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;
+    align-items:center;gap:9px;transition:background .12s;}
+  .test-item:last-child{border-bottom:none;}
+  .test-item:hover{background:#eef9f5;}
+  .test-item.active{background:var(--primary-050);border-left:3px solid var(--primary);padding-left:9px;}
+  .test-item .emo{font-size:16px;flex:none;width:20px;text-align:center;}
+  .test-item .info{flex:1;min-width:0;}
+  .test-item .t-name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;
+    text-overflow:ellipsis;}
+  .test-item .t-cat{font-size:10.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .test-item .b{flex:none;}
+  .list-empty{padding:24px 12px;text-align:center;color:var(--ink-4);font-size:12px;}
+  /* BADGES DE STATUS */
+  .badge{font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:999px;letter-spacing:.2px;
+    display:inline-flex;align-items:center;gap:4px;white-space:nowrap;}
+  .badge .d{width:5px;height:5px;border-radius:50%;background:currentColor;}
+  .badge.ok{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0;}
+  .badge.warn{background:#fef3c7;color:#b45309;border:1px solid #fde68a;}
+  .badge.muted{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;}
+  .badge .d{box-shadow:0 0 0 2px rgba(255,255,255,.4);}
+  .badge.ok .d{background:#16a34a;} .badge.warn .d{background:#d97706;} .badge.muted .d{background:#94a3b8;}
+  .chip{font-size:11px;color:var(--ink-3);background:var(--surface-3);border:1px solid var(--border);
+    padding:3px 9px;border-radius:999px;}
+  .chip b{color:var(--ink-2);font-weight:600;}
+  .fields-hint{font-size:11.5px;color:var(--ink-3);margin:-2px 2px 12px;padding:8px 11px;
+    background:#f8fafc;border:1px dashed var(--border-strong);border-radius:var(--radius-sm);}
+  .fields-hint b{color:var(--ink-2);}
+  .test-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;align-items:center;}
+  /* RESULTADO */
+  .result-empty{padding:46px 24px;text-align:center;color:var(--ink-3);}
+  .result-empty .ic{width:64px;height:64px;margin:0 auto 14px;border-radius:18px;background:var(--surface-3);
+    display:flex;align-items:center;justify-content:center;color:var(--ink-4);}
+  .result-empty h3{margin:0 0 5px;font-size:14px;color:var(--ink-2);font-weight:600;}
+  .result-empty p{margin:0 auto;font-size:12.5px;max-width:280px;line-height:1.55;}
+  .result{display:none;}
+  .result.show{display:block;animation:rise .42s cubic-bezier(.22,.61,.36,1);}
+  @keyframes rise{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+  .score-hero{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);
+    border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;margin-bottom:14px;}
+  .score-cell{background:#fff;padding:12px 12px;text-align:center;}
+  .score-cell .k{font-size:10.5px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.5px;}
+  .score-cell .v{font-size:23px;font-weight:700;color:var(--ink);margin-top:3px;line-height:1;letter-spacing:-.5px;}
+  .score-cell .sub{font-size:10.5px;color:var(--ink-3);margin-top:3px;}
+  .arrow-mid{display:flex;align-items:center;justify-content:center;color:var(--ink-4);font-size:13px;}
+  .classif-block{border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border);margin-bottom:14px;}
+  .classif-bar{padding:14px 16px;color:#fff;display:flex;align-items:center;justify-content:space-between;}
+  .classif-bar .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.8px;opacity:.92;font-weight:600;}
+  .classif-bar .val{font-size:19px;font-weight:700;letter-spacing:-.3px;margin-top:1px;}
+  .classif-bar .pct{font-size:26px;font-weight:800;letter-spacing:-1px;}
+  .classif-bar .pct small{font-size:12px;font-weight:600;opacity:.8;}
+  .scale{margin:0;padding:13px 14px 14px;background:#fff;}
+  .scale-wrap{position:relative;margin-bottom:8px;}
+  .scale-track{position:relative;height:13px;border-radius:7px;overflow:hidden;display:flex;}
+  .scale-track > span{display:block;}
+  .scale-mark{position:absolute;top:-4px;width:3px;height:21px;background:var(--ink);border-radius:2px;
+    box-shadow:0 0 0 3px rgba(255,255,255,.95);transition:left .55s cubic-bezier(.22,.61,.36,1);z-index:2;}
+  .scale-mark::after{content:"";position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--ink);border-bottom:0;}
+  .scale-legend{display:flex;justify-content:space-between;font-size:9.5px;color:var(--ink-4);
+    margin-top:5px;font-weight:500;}
+  .laudo-box{background:var(--surface-3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;}
+  .laudo-head{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;
+    border-bottom:1px solid var(--border);}
+  .laudo-head .t{font-size:11.5px;font-weight:700;color:var(--ink-2);letter-spacing:.2px;}
+  .laudo-head .t span{color:var(--primary);}
+  .laudo-text{font-family:var(--font);font-size:12.8px;color:var(--ink-2);line-height:1.62;
+    padding:12px 14px;white-space:pre-wrap;}
+  .mini-btn{font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;cursor:pointer;
+    border:1px solid var(--border-strong);background:#fff;color:var(--ink-2);display:inline-flex;
+    align-items:center;gap:5px;transition:all .15s;}
+  .mini-btn:hover{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .mini-btn.done{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .interp{border-left:3px solid var(--accent);background:#f0fbfd;padding:11px 13px;
+    border-radius:0 var(--radius-sm) var(--radius-sm) 0;}
+  .interp .t{font-size:11px;font-weight:700;color:#0e7490;text-transform:uppercase;letter-spacing:.5px;
+    margin-bottom:5px;display:flex;align-items:center;gap:6px;}
+  .interp p{margin:0;font-size:12.5px;color:var(--ink-2);line-height:1.6;}
+  .norma-note{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;background:#fffbeb;
+    border:1px solid #fde68a;border-radius:var(--radius-sm);margin-bottom:14px;}
+  .norma-note .ic{color:#d97706;flex:none;margin-top:1px;}
+  .norma-note .t{font-size:11.5px;color:#92400e;line-height:1.5;}
+  .norma-note .t b{color:#78350f;}
+  /* progresso no header do painel de testes */
+  .progress-line{height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden;margin-top:8px;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));
+    transition:width .5s cubic-bezier(.22,.61,.36,1);}
+  /* TOAST */
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-weight:500;
+    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .28s cubic-bezier(.22,.61,.36,1);
+    z-index:80;display:flex;align-items:center;gap:9px;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .toast svg{color:#34d399;}
+  /* RODAPÉ */
+  footer{max-width:1500px;margin:8px auto 26px;padding:0 22px;}
+  .foot-inner{text-align:center;font-size:11px;color:var(--ink-3);line-height:1.6;padding:14px 16px;
+    background:rgba(255,255,255,.6);border:1px solid var(--border);border-radius:var(--radius);
+    backdrop-filter:blur(4px);}
+  .foot-inner b{color:var(--ink-2);} .foot-inner .warn{color:#b45309;font-weight:600;}
+  .divider{height:1px;background:var(--border);margin:15px 0;}
+  .section-label{font-size:10.5px;font-weight:700;color:var(--ink-3);text-transform:uppercase;
+    letter-spacing:.7px;margin:0 0 10px 2px;}
+  .vlist{display:flex;flex-direction:column;gap:6px;}
+  .vmsg{font-size:12px;color:#dc2626;background:#fef2f2;border:1px solid #fecaca;padding:7px 10px;
+    border-radius:7px;display:flex;align-items:center;gap:7px;}
+  .results-table{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}
+  .results-table th,.results-table td{padding:4px 6px;border-bottom:1px solid var(--border);text-align:center;}
+  .results-table th{color:var(--ink-3);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.3px;}
+  .results-table td.dim{font-weight:600;color:var(--ink-2);text-align:left;}
+  .results-table td.pct{font-weight:700;color:var(--primary-700);}
+</style>
+</head>
+<body>
+
+<!-- ====================== HEADER ====================== -->
+<header class="app">
+  <div class="app-inner">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 13c2-1 3.5-1 5 0s3 1 4.5 0 3-1 4.5 0 2.5 1 4 0" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
+          <path d="M3 18c2-1 3.5-1 5 0s3 1 4.5 0 3-1 4.5 0 2.5 1 4 0" stroke="#bdf2e8" stroke-width="2.1" stroke-linecap="round"/>
+          <circle cx="12" cy="6" r="2.2" fill="#fff"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Psycho<b>Sys</b></div>
+        <div class="brand-sub">Plataforma de Correção Neuropsicológica</div>
+      </div>
+    </div>
+    <div class="app-spacer"></div>
+    <div class="header-meta">
+      <span class="pill"><span class="dot"></span><b id="hdrCount">49</b> testes disponíveis</span>
+      <span class="pill blue"><span class="dot"></span>Normas BR · CFP 31/2022</span>
+      <span class="pill slate"><span class="dot"></span>MVP V4.0</span>
+    </div>
+  </div>
+</header>
+
+<!-- ====================== CONTEÚDO ====================== -->
+<main>
+  <div class="grid">
+
+    <!-- ============ PAINEL ESQUERDO: PACIENTE ============ -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-num">1</span> Dados do Paciente</h2>
+        <div class="kicker">Identificação e estratos normativos</div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label class="lbl" for="pNome">Nome do paciente</label>
+          <input type="text" id="pNome" placeholder="Nome do paciente" value="">
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label class="lbl" for="pNasc">Data de nascimento</label>
+            <input type="date" id="pNasc" value="">
+          </div>
+          <div class="field">
+            <label class="lbl" for="pSexo">Sexo</label>
+            <select id="pSexo">
+              <option value="Feminino" selected>Feminino</option>
+              <option value="Masculino">Masculino</option>
+            </select>
+          </div>
+        </div>
+        <div class="idade-box">
+          <div class="icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 8v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
+          </div>
+          <div class="txt">Idade: <b id="pIdade">—</b> <span id="pIdadeDet">anos</span></div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-label">Estratificação normativa</div>
+        <div class="field">
+          <label class="lbl" for="pEsc">Escolaridade</label>
+          <select id="pEsc">
+            <option value="Fundamental">Ensino Fundamental</option>
+            <option value="Médio">Ensino Médio</option>
+            <option value="Superior">Ensino Superior</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="lbl" for="pCRP">CRP do profissional</label>
+          <input type="text" id="pCRP" placeholder="00/00000" value="">
+        </div>
+        <button class="btn btn-ghost btn-block" id="btnSalvar" type="button" style="margin-top:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 4h11l3 3v13H5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 4v5h7V4M8 20v-6h8v6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Salvar no prontuário
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ PAINEL CENTRAL: SELEÇÃO DE TESTE ============ -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-num">2</span> Catálogo de Testes</h2>
+        <div class="kicker">Busque, filtre por categoria e selecione o instrumento</div>
+        <div class="progress-line"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+      <div class="card-body">
+        <div class="search-box">
+          <svg class="s-ic" width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="busca" placeholder="Buscar por nome do teste (ex.: memória, WISC, atenção)...">
+        </div>
+        <div class="chips-row" id="catChips"></div>
+        <div class="test-list" id="testList"></div>
+      </div>
+    </section>
+
+    <!-- ============ PAINEL DIREITO: APLICAÇÃO + RESULTADO ============ -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-num">3</span> Aplicação &amp; Correção</h2>
+        <div class="kicker" id="selTesteNome">Selecione um teste no catálogo</div>
+      </div>
+      <div class="card-body">
+        <!-- bloco dinâmico: metadados + campos -->
+        <div id="testePanel" style="display:none;">
+          <div class="test-meta" id="testMeta"></div>
+          <div class="fields-hint" id="testDesc"></div>
+          <div class="section-label">Escores brutos</div>
+          <div id="camposTeste"></div>
+          <div class="vlist" id="errosCalc"></div>
+          <button class="btn btn-accent btn-block" id="btnCalc" type="button" style="margin-top:4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 7h14M5 12h8M5 17h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="17" cy="14" r="3.5" stroke="currentColor" stroke-width="1.8"/></svg>
+            Calcular correção
+          </button>
+        </div>
+
+        <div class="result-empty" id="resultEmpty">
+          <div class="ic">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M4 19V9m5 10V5m5 14v-7m5 7V11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <h3 id="emptyTitle">Escolha um teste</h3>
+          <p id="emptyMsg">Selecione um instrumento na lista à esquerda para visualizar os campos de escore e iniciar a correção automática.</p>
+        </div>
+
+        <div class="result" id="resultBox">
+          <div class="norma-note">
+            <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 4.3 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
+            <div class="t" id="normaTxt"></div>
+          </div>
+          <div class="score-hero">
+            <div class="score-cell">
+              <div class="k">Escore bruto</div>
+              <div class="v" id="rBruto">—</div>
+              <div class="sub" id="rBrutoDesc">—</div>
+            </div>
+            <div class="score-cell arrow-mid">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-5-5 5 5-5 5" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="score-cell">
+              <div class="k" id="rTransLabel">Escore transformado</div>
+              <div class="v" id="rTransformado">—</div>
+              <div class="sub" id="rZdesc">Z = —</div>
+            </div>
+          </div>
+          <!-- para testes multidimensionais (BFP, etc.) renderizamos uma tabela -->
+          <div id="multiBox" style="display:none;margin-bottom:14px;">
+            <div class="section-label" style="margin-bottom:6px;">Resultado por dimensão</div>
+            <table class="results-table" id="multiTable"></table>
+          </div>
+          <div class="classif-block">
+            <div class="classif-bar" id="classifBar">
+              <div>
+                <div class="lbl">Classificação</div>
+                <div class="val" id="rClassif">—</div>
+              </div>
+              <div class="pct"><span id="rPct">—</span><small>º percentil</small></div>
+            </div>
+            <div class="scale">
+              <div class="scale-wrap">
+                <div class="scale-track" id="scaleTrack"></div>
+                <div class="scale-mark" id="scaleMark" style="left:50%;"></div>
+              </div>
+              <div class="scale-legend"><span>1</span><span>5</span><span>10</span><span>25</span><span>50</span><span>75</span><span>90</span><span>95</span><span>100</span></div>
+            </div>
+          </div>
+          <div class="laudo-box">
+            <div class="laudo-head">
+              <div class="t">Trecho de <span>laudo</span> gerado</div>
+              <button class="mini-btn" id="btnCopy" type="button">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="1.8"/></svg>
+                Copiar laudo
+              </button>
+            </div>
+            <div class="laudo-text" id="rLaudo">—</div>
+          </div>
+          <div class="interp">
+            <div class="t">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8h.01M11 12h1v5h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              Interpretação clínica
+            </div>
+            <p id="rInterp">—</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <b>MVP demonstrativo</b> — 49 testes do catálogo <b>PsychoSys</b>. Normas brasileiras conforme
+    <b>Resolução CFP 31/2022</b>.
+    <span class="warn">Não usar para avaliação clínica real — valores normativos são aproximados para demonstração.</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================================
+   PSYCHOSYS V4.0 — MOTOR DE CORREÇÃO MODULAR
+   ---------------------------------------------------------------------------
+   ARQUITETURA:
+   - CLASSIFICACAO[] : faixas de percentil -> rótulo + cor
+   - zToPercentil(z) : curva normal padrão -> percentil
+   - TAB_MESTRA[]    : lookup QI <-> Z <-> percentil <-> classificação (extraído
+                       da aba _tab_conversao_mestra da planilha PsychoSys)
+   - qiParaPercentil(qi) / lookup por Z
+   - TESTES[]        : ARRAY MODULAR — cada teste é um objeto independente com:
+        { id, nome, nome_curto, categoria, status, fonte, faixa_etaria,
+          estratificacao, icone, campos[], calcular(vals,ctx), gerarLaudo? }
+   Para plugar um novo teste basta adicionar um objeto ao array TESTES.
+   ============================================================================ */
+
+/* ---- Tabela de classificação (Spreen & Strauss / PsychoSys) ---- */
+const CLASSIFICACAO = [
+  { min:0,   max:1,   rotulo:"Deficitário",    cor:"#dc2626" },
+  { min:2,   max:4,   rotulo:"Limítrofe",       cor:"#ea580c" },
+  { min:5,   max:9,   rotulo:"Média Inferior",  cor:"#ca8a04" },
+  { min:10,  max:24,  rotulo:"Médio Inferior",  cor:"#65a30d" },
+  { min:25,  max:74,  rotulo:"Médio",           cor:"#16a34a" },
+  { min:75,  max:90,  rotulo:"Médio Superior",  cor:"#0891b2" },
+  { min:91,  max:97,  rotulo:"Superior",        cor:"#2563eb" },
+  { min:98,  max:100, rotulo:"Muito Superior",  cor:"#7c3aed" }
+];
+
+/* ---- Z-score -> percentil (curva normal, Abramowitz & Stegun) ---- */
+function zToPercentil(z){
+  if(z===null||z===undefined||!isFinite(z)) return null;
+  const sign = z < 0 ? -1 : 1;
+  const x = Math.abs(z) / Math.SQRT2;
+  const t = 1.0 / (1.0 + 0.3275911 * x);
+  const y = 1.0 - (((((1.061405429*t - 1.453152027)*t) + 1.421413741)*t - 0.284496736)*t + 0.254829592) * t * Math.exp(-x*x);
+  const cdf = 0.5 * (1.0 + sign * y);
+  return Math.round(Math.max(1, Math.min(100, cdf * 100)));
+}
+function classificar(pct){
+  for(const c of CLASSIFICACAO){ if(pct>=c.min && pct<=c.max) return c; }
+  return CLASSIFICACAO[4];
+}
+
+/* ============================================================================
+   TABELA MESTRA (extraída de _tab_conversao_mestra.json — planilha PsychoSys)
+   Lookup QI <-> Z <-> percentil <-> classificação. Usada por testes que
+   trabalham com QI composto (Wechsler) ou precisam de conversão por Z.
+   ============================================================================ */
+const TAB_MESTRA = [
+  {qi:55,z:-4.0,pct:0.1},{qi:60,z:-3.0,pct:0.5},{qi:65,z:-2.67,pct:1},{qi:68,z:-2.2,pct:2},
+  {qi:73,z:-1.96,pct:3},{qi:74,z:-1.82,pct:4},{qi:75,z:-1.7,pct:5},{qi:77,z:-1.6,pct:6},
+  {qi:78,z:-1.52,pct:7},{qi:79,z:-1.44,pct:8},{qi:80,z:-1.38,pct:9},{qi:81,z:-1.32,pct:10},
+  {qi:82,z:-1.21,pct:12},{qi:84,z:-1.11,pct:14},{qi:85,z:-1.02,pct:16},{qi:87,z:-0.9,pct:19},
+  {qi:88,z:-0.83,pct:21},{qi:89,z:-0.76,pct:23},{qi:90,z:-0.7,pct:25},{qi:91,z:-0.63,pct:27},
+  {qi:92,z:-0.54,pct:30},{qi:93,z:-0.48,pct:32},{qi:94,z:-0.43,pct:34},{qi:95,z:-0.35,pct:37},
+  {qi:96,z:-0.3,pct:39},{qi:97,z:-0.22,pct:42},{qi:98,z:-0.14,pct:45},{qi:99,z:-0.07,pct:47},
+  {qi:100,z:0.0,pct:50},{qi:101,z:0.07,pct:53},{qi:102,z:0.14,pct:55},{qi:103,z:0.22,pct:58},
+  {qi:104,z:0.3,pct:61},{qi:105,z:0.35,pct:63},{qi:106,z:0.43,pct:66},{qi:107,z:0.49,pct:68},
+  {qi:108,z:0.54,pct:70},{qi:109,z:0.6,pct:73},{qi:110,z:0.66,pct:75},{qi:111,z:0.73,pct:77},
+  {qi:112,z:0.79,pct:79},{qi:113,z:0.86,pct:81},{qi:114,z:0.9,pct:82},{qi:115,z:0.98,pct:84},
+  {qi:116,z:1.06,pct:86},{qi:118,z:1.16,pct:88},{qi:119,z:1.26,pct:90},{qi:120,z:1.32,pct:91},
+  {qi:121,z:1.38,pct:92},{qi:122,z:1.44,pct:93},{qi:123,z:1.52,pct:94},{qi:125,z:1.6,pct:95},
+  {qi:127,z:1.7,pct:96},{qi:129,z:1.82,pct:97},{qi:132,z:1.96,pct:98},{qi:134,z:2.2,pct:99},
+  {qi:145,z:3.0,pct:99.9}
+];
+/* Converte QI (escala Wechsler M=100 DP=15) em Z e percentil pela tabela mestra. */
+function qiParaZ(qi){
+  if(qi<=TAB_MESTRA[0].qi) return TAB_MESTRA[0].z;
+  if(qi>=TAB_MESTRA[TAB_MESTRA.length-1].qi) return TAB_MESTRA[TAB_MESTRA.length-1].z;
+  for(let i=0;i<TAB_MESTRA.length-1;i++){
+    const a=TAB_MESTRA[i], b=TAB_MESTRA[i+1];
+    if(qi>=a.qi && qi<=b.qi){
+      const f=(qi-a.qi)/(b.qi-a.qi);
+      return a.z + f*(b.z-a.z);
+    }
+  }
+  return 0;
+}
+function zParaQI(z){ return Math.round(100 + z*15); }
+
+/* Ajuste de média por escolaridade (delta em Z) — usado pelos testes com
+   estratificação. Valores realistas para a demo. */
+const ESC_DELTA_Z = { "Fundamental":-0.25, "Médio":0.0, "Superior":+0.30 };
+/* Ajuste de média por idade para testes sensíveis ao envelhecimento
+   (z por década acima de 40). Negativo = pior com a idade. */
+function idadeDeltaZ(idade){ if(!idade) return 0; return -Math.max(0,(idade-40)/10)*0.12; }
+
+/* ============================================================================
+   ARRAY MODULAR DE TESTES — 49 instrumentos do catálogo PsychoSys
+   ---------------------------------------------------------------------------
+   Cada objeto:
+     id            : chave única
+     nome          : nome completo
+     nome_curto    : sigla
+     categoria     : categoria (usada no filtro por chips)
+     catGrupo      : grupo para o ícone/emoji
+     status        : CONFIRMADO-BR | PARCIAL | FALTANTE | A_CONFIRMAR
+     fonte         : referência normativa
+     faixa_etaria  : texto
+     estratificacao: array
+     campos        : [{id,label,ph}]  (ph = placeholder/dica de intervalo)
+     escala        : "QI" | "T" | "Z" | "PCT" (como o resultado é apresentado)
+     maiorMelhor   : true|false (para tempo, false)
+     calcular(vals,ctx) -> { bruto, brutoDesc, z, valor, valorLabel,
+                             media, dp, multi?:[{dim,bruto,z,pct,classif}] }
+   ctx = { nome, sexo, escolaridade, idade }
+   ============================================================================ */
+const TESTES = [
+
+/* ===================== INTELIGÊNCIA ===================== */
+{
+  id:"wisc_iv", nome:"Escala Wechsler de Inteligência para Crianças IV", nome_curto:"WISC-IV",
+  categoria:"Inteligência", catGrupo:"Inteligência", status:"CONFIRMADO-BR",
+  fonte:"Tabela A8.1 (Br); Flanagan & Kaufman 2009", faixa_etaria:"6-16 anos",
+  estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
+  campos:[
+    {id:"cv",label:"Compreensão Verbal (ICV)",ph:"1–19"},
+    {id:"rp",label:"Raciocínio Perceptivo (IRP)",ph:"1–19"},
+    {id:"mo",label:"Memória Operacional (IMO)",ph:"1–19"},
+    {id:"vo",label:"Velocidade de Process. (IVP)",ph:"1–19"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.cv||0)+(+vals.rp||0)+(+vals.mo||0)+(+vals.vo||0);
+    const media=40+ESC_DELTA_Z[ctx.escolaridade]*6, dp=6;
+    let z=(bruto-media)/dp;
+    const qi=zParaQI(z);
+    return {bruto,brutoDesc:"Σ escores ponderados",z,valor:qi,valorLabel:"QI composto",media:Math.round(media),dp};
+  }
+},
+{
+  id:"wais_iii", nome:"Escala Wechsler de Inteligência para Adultos III", nome_curto:"WAIS-III",
+  categoria:"Inteligência", catGrupo:"Inteligência", status:"CONFIRMADO-BR",
+  fonte:"Tabela A.1 (Br) Wechsler", faixa_etaria:"16-89 anos",
+  estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
+  campos:[
+    {id:"vc",label:"Compreensão Verbal (ICV)",ph:"1–19"},
+    {id:"or",label:"Organização Perceptual (IOP)",ph:"1–19"},
+    {id:"mc",label:"Memória de Trabalho (IMT)",ph:"1–19"},
+    {id:"vp",label:"Velocidade de Process. (IVP)",ph:"1–19"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.vc||0)+(+vals.or||0)+(+vals.mc||0)+(+vals.vp||0);
+    const media=40+ESC_DELTA_Z[ctx.escolaridade]*6, dp=6;
+    let z=(bruto-media)/dp;
+    const qi=zParaQI(z);
+    return {bruto,brutoDesc:"Σ escores ponderados",z,valor:qi,valorLabel:"QI composto",media:Math.round(media),dp};
+  }
+},
+{
+  id:"wasi", nome:"Escala Abreviada de Inteligência (WASI)", nome_curto:"WASI",
+  categoria:"Inteligência", catGrupo:"Inteligência", status:"PARCIAL",
+  fonte:"Tabela 27 pag 67 do manual", faixa_etaria:"6-89 anos",
+  estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
+  campos:[
+    {id:"vocab",label:"Vocabulário (ponderado)",ph:"1–19"},
+    {id:"matr",label:"Matrizes (ponderado)",ph:"1–19"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.vocab||0)+(+vals.matr||0);
+    const media=20+ESC_DELTA_Z[ctx.escolaridade]*3, dp=4;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Σ 2 subtestes",z,valor:zParaQI(z),valorLabel:"QI estimado (2-subtestes)",media:Math.round(media),dp};
+  }
+},
+
+/* ===================== MEMÓRIA ===================== */
+{
+  id:"ravlt", nome:"Teste de Aprendizagem Auditivo-Verbal de Rey", nome_curto:"RAVLT",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Malloy-Diniz et al. (RAVLT-NORMAS); pag 53", faixa_etaria:"6-92 anos",
+  estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
+  campos:[
+    {id:"a1",label:"Ensaio A1",ph:"0–15"},{id:"a2",label:"Ensaio A2",ph:"0–15"},
+    {id:"a3",label:"Ensaio A3",ph:"0–15"},{id:"a4",label:"Ensaio A4",ph:"0–15"},
+    {id:"a5",label:"Ensaio A5",ph:"0–15"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.a1||0)+(+vals.a2||0)+(+vals.a3||0)+(+vals.a4||0)+(+vals.a5||0);
+    const media=48+ESC_DELTA_Z[ctx.escolaridade]*10+idadeDeltaZ(ctx.idade)*10, dp=10;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Evocação total A1–A5",z,valor:Math.round(50+z*10),valorLabel:"T-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"hvlt", nome:"Hopkins Verbal Learning Test – Revised", nome_curto:"HVLT-R",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Miotto EC et al. 2012 – Arq Neuro-Psiquiatr", faixa_etaria:"18-85 anos",
+  estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
+  campos:[
+    {id:"r1",label:"Recall 1",ph:"0–12"},{id:"r2",label:"Recall 2",ph:"0–12"},
+    {id:"r3",label:"Recall 3",ph:"0–12"},{id:"dr",label:"Reconhecimento",ph:"0–24"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.r1||0)+(+vals.r2||0)+(+vals.r3||0);
+    const media=24+ESC_DELTA_Z[ctx.escolaridade]*4+idadeDeltaZ(ctx.idade)*5, dp=5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total de aprendizagem",z,valor:Math.round(50+z*10),valorLabel:"T-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"bvmt", nome:"Brief Visuospatial Memory Test – Revised", nome_curto:"BVMT-R",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Miotto EC et al. 2012 – Arq Neuro-Psiquiatr", faixa_etaria:"18-85 anos",
+  estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
+  campos:[
+    {id:"s1",label:"Ens. 1 (0–12)",ph:"0–12"},{id:"s2",label:"Ens. 2 (0–12)",ph:"0–12"},
+    {id:"s3",label:"Ens. 3 (0–12)",ph:"0–12"},{id:"rec",label:"Reconhecimento",ph:"0–6"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.s1||0)+(+vals.s2||0)+(+vals.s3||0);
+    const media=21+ESC_DELTA_Z[ctx.escolaridade]*4+idadeDeltaZ(ctx.idade)*5, dp=5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total dos 3 ensaios",z,valor:Math.round(50+z*10),valorLabel:"T-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"fig7pal", nome:"Teste de 7 Figuras e 7 Palavras", nome_curto:"7FIG-7PAL",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Dados normativos documentados", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"fig_evo",label:"Evocação de figuras",ph:"0–7"},
+    {id:"pal_evo",label:"Evocação de palavras",ph:"0–7"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.fig_evo||0)+(+vals.pal_evo||0);
+    const media=11+ESC_DELTA_Z[ctx.escolaridade]*2, dp=2.4;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Σ figuras + palavras",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+  }
+},
+{
+  id:"bams", nome:"Bateria de Avaliação da Memória Semântica", nome_curto:"BAMS",
+  categoria:"Memória", catGrupo:"Memória", status:"PARCIAL",
+  fonte:"Manual Vetor — sem citação explícita", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"total",label:"Escore total",ph:"0–60"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.total||0);
+    const media=40+ESC_DELTA_Z[ctx.escolaridade]*8, dp=8;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"corsi", nome:"Blocos de Corsi (Span visuoespacial)", nome_curto:"Corsi",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Dias & Mecca – Avaliação Neuropsicológica Memória", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"span",label:"Span (blocos)",ph:"3–9"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.span||0);
+    const media=5+ESC_DELTA_Z[ctx.escolaridade]*0.6, dp=1;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Span máx.",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+  }
+},
+{
+  id:"figrey", nome:"Figura Complexa de Rey (Osterrieth)", nome_curto:"FigRey",
+  categoria:"Memória", catGrupo:"Memória", status:"PARCIAL",
+  fonte:"Normas presentes (RCFT) — sem citação clara", faixa_etaria:"6-90 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"cop",label:"Cópia (0–36)",ph:"0–36"},
+    {id:"evo",label:"Evocação (0–36)",ph:"0–36"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.cop||0);
+    const media=32+ESC_DELTA_Z[ctx.escolaridade]*1.2+idadeDeltaZ(ctx.idade)*1.5, dp=4.5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Cópia",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+  }
+},
+
+/* ===================== ATENÇÃO ===================== */
+{
+  id:"ac", nome:"Teste de Atenção Concentrada (AC)", nome_curto:"AC",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"Cambraia SV – Vetor 2018", faixa_etaria:"6-82 anos",
+  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"ac",label:"Acertos",ph:"0–80"},
+    {id:"er",label:"Erros",ph:"0–40"},
+    {id:"te",label:"Tempo (s)",ph:"seg."}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.ac||0);
+    const media=52+ESC_DELTA_Z[ctx.escolaridade]*12, dp=12;
+    let z=(bruto-media)/dp;
+    const pct=zToPercentil(z);
+    return {bruto,brutoDesc:"Acertos",z,valor:pct,valorLabel:"Percentil direto",media:Math.round(media),dp};
+  }
+},
+{
+  id:"ac15", nome:"Atenção Concentrada versão reduzida (AC-15)", nome_curto:"AC-15",
+  categoria:"Atenção", catGrupo:"Atenção", status:"A_CONFIRMAR",
+  fonte:"A confirmar", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"ac",label:"Acertos",ph:"0–15"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.ac||0);
+    const media=10+ESC_DELTA_Z[ctx.escolaridade]*2, dp=2.5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Acertos",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+  }
+},
+{
+  id:"bpa", nome:"Bateria de Provas de Atenção (BPA)", nome_curto:"BPA",
+  categoria:"Atenção", catGrupo:"Atenção", status:"PARCIAL",
+  fonte:"Manual Vetor — sem citação explícita", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"vig",label:"Atenção sustentada",ph:"0–100"},
+    {id:"alt",label:"Atenção alternada",ph:"0–100"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.vig||0);
+    const media=65+ESC_DELTA_Z[ctx.escolaridade]*12, dp=12;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Atenção sustentada",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"d2r", nome:"Teste d2 Revisado (Atenção concentrada)", nome_curto:"D2-R",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"Tabelas normativas Teste D2", faixa_etaria:"7-76 anos",
+  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"tn",label:"Total processado (TN)",ph:"0–600"},
+    {id:"con",label:"Erros (E)",ph:"0–200"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.tn||0);
+    const media=350+ESC_DELTA_Z[ctx.escolaridade]*80, dp=80;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"TN (acertos líquidos)",z,valor:zToPercentil(z),valorLabel:"Percentil",media:Math.round(media),dp};
+  }
+},
+{
+  id:"stroop", nome:"Teste de Stroop (Palavras/Cores)", nome_curto:"STROOP",
+  categoria:"Atenção", catGrupo:"Função Executiva", status:"PARCIAL",
+  fonte:"Normas presentes — sem citação clara", faixa_etaria:"18-80 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"p",label:"Cartão P (palavras)",ph:"acertos"},
+    {id:"c",label:"Cartão C (cores)",ph:"acertos"},
+    {id:"pc",label:"Cartão PC (palavras-cores)",ph:"acertos"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.p||0)+(+vals.c||0)+(+vals.pc||0);
+    const media=240+ESC_DELTA_Z[ctx.escolaridade]*45+idadeDeltaZ(ctx.idade)*30, dp=45;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Σ P+C+PC",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"trilhas", nome:"Teste de Trilhas (Trail Making A/B)", nome_curto:"TRILHAS",
+  categoria:"Atenção", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Lima RF & Ciasca SM", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
+  campos:[
+    {id:"ta",label:"Tempo TMT-A (s)",ph:"segundos"},
+    {id:"tb",label:"Tempo TMT-B (s)",ph:"segundos"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.ta||0);
+    // menor tempo = melhor (Z invertido)
+    const idadeAdj=ctx.idade?Math.max(0,(ctx.idade-40))*0.4:0;
+    const media=30+idadeAdj-ESC_DELTA_Z[ctx.escolaridade]*4, dp=12;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Tempo TMT-A",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:Math.round(media),dp};
+  }
+},
+{
+  id:"fdt", nome:"Fluência e Distração (FDT)", nome_curto:"FDT",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"Tabela 6.2 — normas por idade N=1033", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"flu",label:"Fluência",ph:"nº itens"},
+    {id:"dist",label:"Distração",ph:"nº itens"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.flu||0);
+    const media=30+ESC_DELTA_Z[ctx.escolaridade]*8, dp=8;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Fluência",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+
+/* ===================== FUNÇÃO EXECUTIVA ===================== */
+{
+  id:"hayling", nome:"Teste Hayling (inibição de resposta)", nome_curto:"Hayling",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Siqueira LS et al. (Fonseca & Prando – TAN)", faixa_etaria:"Infantil",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
+  campos:[
+    {id:"err1",label:"Erros sec. 1",ph:"0–15"},
+    {id:"err2",label:"Erros sec. 2",ph:"0–15"},
+    {id:"tempo",label:"Tempo total (s)",ph:"seg."}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.err1||0)+(+vals.err2||0);
+    const media=6+ESC_DELTA_Z[ctx.escolaridade]*1.5, dp=2;
+    let z=(media-bruto)/dp; // mais erros = pior
+    return {bruto,brutoDesc:"Σ erros",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:media.toFixed(1),dp};
+  }
+},
+{
+  id:"gonogo", nome:"Teste Go/No-Go (inibição)", nome_curto:"GO-NO GO",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"PARCIAL",
+  fonte:"Normas presentes — sem citação", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
+  campos:[
+    {id:"fa",label:"Falsos alarmes",ph:"0–40"},
+    {id:"om",label:"Omissões",ph:"0–40"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.fa||0)+(+vals.om||0);
+    const media=8, dp=4;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Σ erros",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:media.toFixed(1),dp};
+  }
+},
+{
+  id:"tol", nome:"Torre de Londres (TOL)", nome_curto:"TOL",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Schlottefeldt et al. 2010", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
+  campos:[
+    {id:"mov",label:"Movimentos totais",ph:"20–120"},
+    {id:"tempo",label:"Tempo de resolução (s)",ph:"seg."}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.mov||0);
+    const media=45-ESC_DELTA_Z[ctx.escolaridade]*6, dp=10;
+    let z=(media-bruto)/dp; // menos mov = melhor
+    return {bruto,brutoDesc:"Movimentos",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:Math.round(media),dp};
+  }
+},
+{
+  id:"wsct48", nome:"Wisconsin Card Sorting Test (WCST-48)", nome_curto:"WSCT48",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"A_CONFIRMAR",
+  fonte:"A confirmar", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
+  campos:[
+    {id:"per",label:"Persistências (PE)",ph:"0–48"},
+    {id:"cat",label:"Categorias concluídas",ph:"0–6"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.per||0);
+    const media=12, dp=6;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Erros de persistência",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:media.toFixed(1),dp};
+  }
+},
+{
+  id:"brief2", nome:"Behavior Rating Inventory of Exec. Function – 2 (BRIEF-2)", nome_curto:"BRIEF-2",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Tabela B1 pag 210", faixa_etaria:"5-18 anos",
+  estratificacao:["idade"], escala:"T", maiorMelhor:false,
+  campos:[
+    {id:"gi",label:"Inibição (GEC T)",ph:"T"},
+    {id:"gec",label:"Índice Global (GEC)",ph:"T"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.gec||0);
+    const media=50, dp=10;
+    let z=(media-bruto)/dp; // T alto = pior
+    return {bruto,brutoDesc:"GEC (T)",z,valor:bruto,valorLabel:"T-score",media,dpe:dp,dp};
+  }
+},
+{
+  id:"briefp", nome:"BRIEF – Versão Pré-escolar (BRIEF-P)", nome_curto:"BRIEF-P",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Tabela A10 pag 84", faixa_etaria:"2-5 anos",
+  estratificacao:["idade"], escala:"T", maiorMelhor:false,
+  campos:[{id:"gec",label:"Índice Global (GEC)",ph:"T"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.gec||0);
+    const media=50, dp=10;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"GEC (T)",z,valor:bruto,valorLabel:"T-score",media,dp};
+  }
+},
+{
+  id:"bdefs", nome:"Barkley Deficits in Executive Functioning Scale (BDEFS)", nome_curto:"BDEFS",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"pag 155 do manual – Barkley", faixa_etaria:"18-71 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[{id:"total",label:"Escore total (percentil)",ph:"0–100"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.total||0);
+    // BDEFS: percentil alto = mais déficit. Converte p/ z negativo.
+    let z=-(bruto-50)/25;
+    return {bruto,brutoDesc:"Percentil total",z,valor:bruto,valorLabel:"Percentil (déficit)",media:50,dp:25};
+  }
+},
+
+/* ===================== LINGUAGEM ===================== */
+{
+  id:"tfv", nome:"Teste de Fluência Verbal (TFV)", nome_curto:"TFV",
+  categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
+  fonte:"Vol II Tabela 03 pag 135 (Seabra)", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"sem",label:"Fluência semântica",ph:"nº itens"},
+    {id:"fon",label:"Fluência fonológica",ph:"nº itens"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.sem||0);
+    const media=18+ESC_DELTA_Z[ctx.escolaridade]*5, dp=5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Fluência semântica",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"token", nome:"Token Test (compreensão verbal)", nome_curto:"TOKEN",
+  categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
+  fonte:"Malloy-Diniz LF et al. (bateria de testes)", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"ac",label:"Acertos totais",ph:"0–62"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.ac||0);
+    const media=55+ESC_DELTA_Z[ctx.escolaridade]*3, dp=5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Acertos",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"nomeacao", nome:"Teste de Nomeação", nome_curto:"NOMEAÇÃO",
+  categoria:"Linguagem", catGrupo:"Linguagem", status:"A_CONFIRMAR",
+  fonte:"A confirmar", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"ac",label:"Acertos de nomeação",ph:"0–60"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.ac||0);
+    const media=52+ESC_DELTA_Z[ctx.escolaridade]*4, dp=5;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Acertos",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+},
+{
+  id:"prolec", nome:"PROLEC – Avaliação de Processos de Leitura", nome_curto:"Prolec",
+  categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
+  fonte:"Tabela 19 (PROLEC 3ª ed.)", faixa_etaria:"6-12 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
+  campos:[{id:"tot",label:"Escore total",ph:"0–100"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=70+ESC_DELTA_Z[ctx.escolaridade]*15, dp=15;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media:Math.round(media),dp};
+  }
+},
+
+/* ===================== PERSONALIDADE ===================== */
+{
+  id:"bfp", nome:"Bateria Fatorial de Personalidade (BFP)", nome_curto:"BFP",
+  categoria:"Personalidade", catGrupo:"Personalidade", status:"CONFIRMADO-BR",
+  fonte:"Nuernberg, Hutz, Bandeira (Casa do Psicólogo)", faixa_etaria:"Adultos",
+  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"n",label:"Neuroticismo (N)",ph:"0–120"},
+    {id:"e",label:"Extroversão (E)",ph:"0–120"},
+    {id:"a",label:"Amabilidade (A)",ph:"0–120"},
+    {id:"c",label:"Conscienciosidade (C)",ph:"0–120"},
+    {id:"o",label:"Abertura (O)",ph:"0–120"}
+  ],
+  calcular(vals,ctx){
+    // Cada dimensão Big Five -> percentil (M=60, DP=12)
+    const dims=[["N","Neuroticismo",+vals.n||0],["E","Extroversão",+vals.e||0],
+                ["A","Amabilidade",+vals.a||0],["C","Conscienciosidade",+vals.c||0],
+                ["O","Abertura",+vals.o||0]];
+    const media=60, dp=12;
+    const multi=dims.map(([k,n,v])=>{
+      const z=(v-media)/dp; const pct=zToPercentil(z);
+      return {dim:n,bruto:v,z,pct,classif:classificar(pct)};
+    });
+    // escore composto = média dos Z (excluindo N invertido)
+    const zMedio=dims.map(([k,n,v])=>(v-media)/dp).reduce((s,z,i)=>s+(i===0?-z:z),0)/dims.length;
+    const bruto=Math.round(dims.reduce((s,d)=>s+d[2],0)/dims.length);
+    return {bruto,brutoDesc:"Média das 5 dimensões",z:zMedio,valor:zToPercentil(zMedio),valorLabel:"Percentil médio",media,dp,multi};
+  }
+},
+{
+  id:"pfister", nome:"Teste das Pirâmides Coloridas de Pfister", nome_curto:"Pfister",
+  categoria:"Personalidade", catGrupo:"Personalidade", status:"CONFIRMADO-BR",
+  fonte:"Tabela Nova 2020 – adultos", faixa_etaria:"5+ anos",
+  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
+  campos:[
+    {id:"azul",label:"Predomínio Azul",ph:"0–15"},
+    {id:"verde",label:"Predomínio Verde",ph:"0–15"},
+    {id:"vermelho",label:"Predomínio Vermelho",ph:"0–15"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.azul||0);
+    const media=5, dp=3;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Predomínio azul",z,valor:z.toFixed(2),valorLabel:"Z-score",media,dpe:dp,dp};
+  }
+},
+
+/* ===================== TDAH / COMPORTAMENTO ===================== */
+{
+  id:"etdah2", nome:"Escala TDAH – versão 2", nome_curto:"ETDAH-2",
+  categoria:"TDAH", catGrupo:"TDAH", status:"CONFIRMADO-BR",
+  fonte:"Tab 2.11 pag 63", faixa_etaria:"Variável",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[
+    {id:"des",label:"Desatenção",ph:"0–27"},
+    {id:"hip",label:"Hiperatividade",ph:"0–27"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.des||0)+(+vals.hip||0);
+    const media=16, dp=8;
+    let z=(media-bruto)/dp; // escore alto = mais sintomas = pior
+    return {bruto,brutoDesc:"Σ desatenção + hiperatividade",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+  }
+},
+{
+  id:"etdah_pais", nome:"Escala TDAH – versão Pais", nome_curto:"ETDAH-Pais",
+  categoria:"TDAH", catGrupo:"TDAH", status:"PARCIAL",
+  fonte:"Normas presentes — sem citação", faixa_etaria:"Infantil",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[{id:"tot",label:"Escore total",ph:"0–54"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=16, dp=8;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+  }
+},
+{
+  id:"etdah_ad", nome:"Escala TDAH – versão Professores", nome_curto:"ETDAH-AD",
+  categoria:"TDAH", catGrupo:"TDAH", status:"PARCIAL",
+  fonte:"Normas presentes — sem citação", faixa_etaria:"Infantil",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[{id:"tot",label:"Escore total",ph:"0–54"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=14, dp=8;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+  }
+},
+{
+  id:"etdah_criad", nome:"Escala TDAH – versão Crianças/Adolescentes", nome_curto:"ETDAH-CriAd",
+  categoria:"TDAH", catGrupo:"TDAH", status:"CONFIRMADO-BR",
+  fonte:"Tabela 19 – amostra geral", faixa_etaria:"6-18 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[{id:"tot",label:"Escore total",ph:"0–54"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=15, dp=8;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+  }
+},
+{
+  id:"snap", nome:"SNAP-IV (TDAH)", nome_curto:"SNAP-IV",
+  categoria:"TDAH", catGrupo:"TDAH", status:"FALTANTE",
+  fonte:"Mattos et al. 2006 (artigo SciELO)", faixa_etaria:"6-18 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[
+    {id:"des",label:"Desatenção",ph:"0–9"},
+    {id:"hip",label:"Hiperatividade",ph:"0–9"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.des||0)+(+vals.hip||0);
+    const media=4, dp=2.5;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Σ itens",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+  }
+},
+{
+  id:"cbcl", nome:"Child Behavior Checklist (CBCL)", nome_curto:"CBCL",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"PARCIAL",
+  fonte:"ASEBA – APPENDIX B pag 102", faixa_etaria:"6-18 anos",
+  estratificacao:["idade","sexo"], escala:"T", maiorMelhor:false,
+  campos:[
+    {id:"int",label:"Problemas internalizantes (T)",ph:"T"},
+    {id:"ext",label:"Problemas externalizantes (T)",ph:"T"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.int||0);
+    const media=50, dp=10;
+    let z=(media-bruto)/dp; // T alto = pior
+    return {bruto,brutoDesc:"Internalizante (T)",z,valor:bruto,valorLabel:"T-score",media,dp};
+  }
+},
+{
+  id:"scared", nome:"Screen for Child Anxiety Related Disorders (SCARED)", nome_curto:"SCARED",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"PARCIAL",
+  fonte:"Isolan 2011 (validação BR)", faixa_etaria:"8-18 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[{id:"tot",label:"Escore total",ph:"0–41"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=12, dp=8;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil",media,dp};
+  }
+},
+{
+  id:"sdq", nome:"Strengths and Difficulties Questionnaire (SDQ)", nome_curto:"SDQ-Pr",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"FALTANTE",
+  fonte:"Fleitlich/Cury 2003 (sdqinfo.org)", faixa_etaria:"4-17 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
+  campos:[{id:"dif",label:"Dificuldades totais",ph:"0–40"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.dif||0);
+    const media=10, dp=6;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"Dificuldades totais",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil",media,dp};
+  }
+},
+{
+  id:"srs2", nome:"Social Responsiveness Scale – 2 (SRS-2)", nome_curto:"SRS-2",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"PARCIAL",
+  fonte:"DSM-5 pag 11", faixa_etaria:"2.5-Adultos",
+  estratificacao:["idade"], escala:"T", maiorMelhor:false,
+  campos:[{id:"tot",label:"Escore T total",ph:"T"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=50, dp=10;
+    let z=(media-bruto)/dp;
+    return {bruto,brutoDesc:"T total",z,valor:bruto,valorLabel:"T-score",media,dp};
+  }
+},
+{
+  id:"iep", nome:"Inventário de Estilos Parentais (IEP)", nome_curto:"IEP",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"Normas maternas/paternas documentadas", faixa_etaria:"Pais",
+  estratificacao:[], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"mre",label:"Mãe – resposta exigente",ph:"0–100"},
+    {id:"pre",label:"Pai – resposta exigente",ph:"0–100"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.mre||0);
+    const media=50, dp=15;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Mãe – exigente",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+  }
+},
+{
+  id:"qedp", nome:"Questionário de Estilos de Disciplina Parental (QEDP)", nome_curto:"QEDP",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"FALTANTE",
+  fonte:"Jonas Jardim Paula / Labep Neuro", faixa_etaria:"Pais",
+  estratificacao:[], escala:"PCT", maiorMelhor:true,
+  campos:[{id:"tot",label:"Escore total",ph:"0–100"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=50, dp=15;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+  }
+},
+
+/* ===================== NEUROPSICOLÓGICO INFANTIL / BATERIAS ===================== */
+{
+  id:"nepsy2", nome:"NEPSY-II (Bateria neuropsicológica infantil)", nome_curto:"Nepsy-2",
+  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"CONFIRMADO-BR",
+  fonte:"Manual Clínico pag 135 Tab 6.2", faixa_etaria:"3-16 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"at",label:"Atenção/FE",ph:"escala"},
+    {id:"li",label:"Linguagem",ph:"escala"},
+    {id:"me",label:"Memória",ph:"escala"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.at||0);
+    const media=10, dp=3;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Atenção (escala 1–19)",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+  }
+},
+{
+  id:"neupsilin_inf", nome:"Bateria NEUPSILIN-Inf", nome_curto:"Neupsilin-Inf",
+  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"PARCIAL",
+  fonte:"Normas presentes — sem citação", faixa_etaria:"Infantil",
+  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"tot",label:"Escore composto",ph:"escala"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=50, dp=10;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Composto",z,valor:z.toFixed(2),valorLabel:"Z-score",media,dp};
+  }
+},
+{
+  id:"pedvr", nome:"Pediatric Evaluation of Disability – VR (PED-vr)", nome_curto:"PED-vr",
+  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"CONFIRMADO-BR",
+  fonte:"Tabela 6.2", faixa_etaria:"Infantil",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
+  campos:[{id:"tot",label:"Escore funcional total",ph:"0–100"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=60, dp=15;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+  }
+},
+{
+  id:"thcp", nome:"Teste de Habilidades para Crianças Pré-escolares", nome_curto:"THCP",
+  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"PARCIAL",
+  fonte:"Normas presentes — sem citação", faixa_etaria:"4-6 anos",
+  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"tot",label:"Escore total",ph:"0–100"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.tot||0);
+    const media=60, dp=15;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:z.toFixed(2),valorLabel:"Z-score",media,dp};
+  }
+},
+{
+  id:"vineland", nome:"Vineland-3 (Comportamento adaptativo)", nome_curto:"Vineland-3",
+  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"FALTANTE",
+  fonte:"Hogrefe BR – manual técnico indisponível", faixa_etaria:"0-90 anos",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
+  campos:[{id:"abc",label:"Índice Adaptativo (ABC)",ph:"20–160"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.abc||0);
+    const media=100, dp=15;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"ABC",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+  }
+},
+
+/* ===================== DESEMPENHO ESCOLAR / PRÉ-ALFABETIZAÇÃO ===================== */
+{
+  id:"tde2", nome:"Teste de Desempenho Escolar – 2 (TDE-II)", nome_curto:"TDE2",
+  categoria:"Desempenho Escolar", catGrupo:"Escolar", status:"PARCIAL",
+  fonte:"Normas presentes (114k células) — sem citação", faixa_etaria:"6-14 anos",
+  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"esc",label:"Escrita",ph:"0–35"},
+    {id:"arit",label:"Aritmética",ph:"0–40"},
+    {id:"leit",label:"Leitura",ph:"0–70"}
+  ],
+  calcular(vals,ctx){
+    const bruto=(+vals.esc||0)+(+vals.arit||0)+(+vals.leit||0);
+    const media=90+ESC_DELTA_Z[ctx.escolaridade]*15, dp=20;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media:Math.round(media),dp};
+  }
+},
+{
+  id:"prova_arit", nome:"Prova de Aritmética", nome_curto:"Prova_Aritmética",
+  categoria:"Desempenho Escolar", catGrupo:"Escolar", status:"A_CONFIRMAR",
+  fonte:"A confirmar", faixa_etaria:"Escolar",
+  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
+  campos:[{id:"ac",label:"Acertos",ph:"0–40"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.ac||0);
+    const media=25, dp=8;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Acertos",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+  }
+},
+{
+  id:"pepr", nome:"Programa de Educação Individualizada – Revisado (PEP-R)", nome_curto:"PEP-R",
+  categoria:"Desempenho Escolar", catGrupo:"Escolar", status:"A_CONFIRMAR",
+  fonte:"A confirmar", faixa_etaria:"6 meses–7 anos",
+  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"dev",label:"Idade de desenvolvimento",ph:"meses"}],
+  calcular(vals,ctx){
+    const bruto=(+vals.dev||0);
+    const media=ctx.idade? ctx.idade*12 : 60, dp=12;
+    let z=(bruto-media)/dp;
+    return {bruto,brutoDesc:"Idade desenv. (m)",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+  }
+}
+
+]; /* fim do array TESTES */
+
+/* ============================================================================
+   MAPEAMENTO CATEGORIA -> EMOJI (para ícones visuais)
+   ============================================================================ */
+const CAT_EMOJI = {
+  "Inteligência":"🧩",
+  "Memória":"🧠",
+  "Atenção":"⚡",
+  "Função Executiva":"🎯",
+  "Linguagem":"💬",
+  "Personalidade":"🎭",
+  "Comportamento":"📊",
+  "TDAH":"🔢",
+  "Neuropsicológico":"🔬",
+  "Escolar":"📚"
+};
+function emojiPara(catGrupo){
+  for(const k in CAT_EMOJI){ if(catGrupo && catGrupo.indexOf(k)>=0) return CAT_EMOJI[k]; }
+  return "📝";
+}
+
+/* ============================================================================
+   ESTADO E DOM
+   ============================================================================ */
+const $ = id => document.getElementById(id);
+const testList=$("testList"), catChips=$("catChips"), busca=$("busca");
+const testePanel=$("testePanel"), testMeta=$("testMeta"), testDesc=$("testDesc"),
+      camposTeste=$("camposTeste"), errosCalc=$("errosCalc"),
+      resultEmpty=$("resultEmpty"), resultBox=$("resultBox"),
+      multiBox=$("multiBox"), multiTable=$("multiTable"),
+      toastEl=$("toast"), selTesteNome=$("selTesteNome"), progFill=$("progFill");
+
+let testeAtual=null;
+let catFiltro="Todas";
+const calculados = new Set(); // ids já calculados (para barra de progresso)
+
+/* lista de categorias para os chips, dinamicamente a partir de TESTES */
+function categorias(){
+  const set=new Set();
+  TESTES.forEach(t=>set.add(t.catGrupo||"Outros"));
+  return ["Todas", ...Array.from(set).sort()];
+}
+
+/* ============================================================================
+   RENDER: CHIPS DE CATEGORIA
+   ============================================================================ */
+function renderChips(){
+  const cats=categorias();
+  catChips.innerHTML=cats.map(c=>{
+    const cnt = c==="Todas"? TESTES.length : TESTES.filter(t=>(t.catGrupo||"Outros")===c).length;
+    const ico = c==="Todas"?"":emojiPara(c)+" ";
+    return `<span class="cat-chip ${c===catFiltro?'active':''}" data-cat="${c}">${ico}${c} <span class="cnt">${cnt}</span></span>`;
+  }).join("");
+  catChips.querySelectorAll(".cat-chip").forEach(el=>{
+    el.addEventListener("click",()=>{
+      catFiltro=el.dataset.cat;
+      renderChips(); renderList();
+    });
+  });
+}
+
+/* ============================================================================
+   RENDER: LISTA DE TESTES FILTRADA
+   ============================================================================ */
+function renderList(){
+  const q=busca.value.trim().toLowerCase();
+  const filtrados=TESTES.filter(t=>{
+    const okCat = catFiltro==="Todas" || (t.catGrupo||"Outros")===catFiltro;
+    const okBusca = !q || (t.nome.toLowerCase().indexOf(q)>=0) || (t.nome_curto.toLowerCase().indexOf(q)>=0)
+                    || (t.categoria.toLowerCase().indexOf(q)>=0);
+    return okCat && okBusca;
+  });
+  if(filtrados.length===0){
+    testList.innerHTML=`<div class="list-empty">Nenhum teste encontrado para "${q||catFiltro}".</div>`;
+    return;
+  }
+  testList.innerHTML=filtrados.map(t=>{
+    const b=statusBadge(t.status);
+    return `<div class="test-item ${testeAtual&&testeAtual.id===t.id?'active':''}" data-id="${t.id}">
+      <div class="emo">${emojiPara(t.catGrupo)}</div>
+      <div class="info">
+        <div class="t-name">${t.nome_curto} <span style="color:var(--ink-4);font-weight:400;">· ${t.nome}</span></div>
+        <div class="t-cat">${t.categoria} · ${t.faixa_etaria}</div>
+      </div>
+      <div class="b">${b}</div>
+    </div>`;
+  }).join("");
+  testList.querySelectorAll(".test-item").forEach(el=>{
+    el.addEventListener("click",()=>selecionarTeste(el.dataset.id));
+  });
+}
+
+function statusBadge(status){
+  if(status==="CONFIRMADO-BR") return `<span class="badge ok"><span class="d"></span>Normas BR</span>`;
+  if(status==="PARCIAL")       return `<span class="badge warn"><span class="d"></span>Em validação</span>`;
+  return `<span class="badge muted"><span class="d"></span>Pendente</span>`;
+}
+
+/* ============================================================================
+   SELEÇÃO DE TESTE + RENDER DOS CAMPOS
+   ============================================================================ */
+function selecionarTeste(id){
+  testeAtual=TESTES.find(t=>t.id===id)||null;
+  if(!testeAtual){
+    testePanel.style.display="none";
+    resultEmpty.style.display="block";
+    resultBox.classList.remove("show");
+    selTesteNome.textContent="Selecione um teste no catálogo";
+    return;
+  }
+  selTesteNome.textContent=`${testeAtual.nome_curto} — ${testeAtual.nome}`;
+  testMeta.innerHTML=`
+    ${statusBadge(testeAtual.status)}
+    <span class="chip"><b>${testeAtual.categoria}</b></span>
+    <span class="chip">Faixa: <b>${testeAtual.faixa_etaria}</b></span>
+    <span class="chip">Escala: <b>${testeAtual.escala}</b></span>
+  `;
+  testDesc.innerHTML=`<b>${testeAtual.nome_curto}.</b> Fonte normativa: <b>${testeAtual.fonte}</b>. ${testeAtual.maiorMelhor?"Escore alto = melhor desempenho.":"Escore alto = pior desempenho (inverte o Z)."}`;
+  // campos — grid responsivo
+  const n=testeAtual.campos.length;
+  let html="";
+  if(n===1){
+    html=testeAtual.campos.map(c=>campoHTML(c)).join("");
+  } else if(n<=2){
+    html=`<div class="row-2">${testeAtual.campos.map(c=>campoHTML(c)).join("")}</div>`;
+  } else {
+    // 2 por linha
+    for(let i=0;i<n;i+=2){
+      const par=testeAtual.campos.slice(i,i+2);
+      if(par.length===2) html+=`<div class="row-2">${par.map(c=>campoHTML(c)).join("")}</div>`;
+      else html+=campoHTML(par[0]);
+    }
+  }
+  camposTeste.innerHTML=html;
+  errosCalc.innerHTML="";
+  testePanel.style.display="block";
+  resultEmpty.style.display="none";
+  resultBox.classList.remove("show");
+  renderList(); // marca o item ativo
+}
+function campoHTML(c){
+  return `<div class="field">
+    <label class="lbl" for="f_${c.id}">${c.label}</label>
+    <input type="number" id="f_${c.id}" data-k="${c.id}" placeholder="${c.ph||''}" min="0" step="any">
+  </div>`;
+}
+
+/* ============================================================================
+   CÁLCULO DE IDADE
+   ============================================================================ */
+function calcIdade(dataStr){
+  if(!dataStr) return null;
+  const nasc=new Date(dataStr); if(isNaN(nasc)) return null;
+  const hoje=new Date();
+  let anos=hoje.getFullYear()-nasc.getFullYear();
+  const m=hoje.getMonth()-nasc.getMonth();
+  if(m<0||(m===0&&hoje.getDate()<nasc.getDate())) anos--;
+  if(anos<0) return null;
+  let meses=hoje.getMonth()-nasc.getMonth();
+  if(meses<0) meses+=12;
+  if(hoje.getDate()<nasc.getDate()) meses--;
+  return {anos, meses};
+}
+function atualizarIdade(){
+  const i=calcIdade($("pNasc").value);
+  if(!i){ $("pIdade").textContent="—"; $("pIdadeDet").textContent="(data inválida)"; return; }
+  $("pIdade").textContent=i.anos;
+  $("pIdadeDet").textContent=i.meses>0?`anos e ${i.meses} ${(i.meses===1?"mês":"meses")}`:"anos completos";
+}
+
+/* ============================================================================
+   VALIDAÇÃO
+   ============================================================================ */
+function validar(){
+  const erros=[];
+  if(!$("pNome").value.trim()) erros.push("Informe o nome do paciente.");
+  const idade=calcIdade($("pNasc").value);
+  if(idade===null) erros.push("Informe uma data de nascimento válida.");
+  const inputs=camposTeste.querySelectorAll("input[type=number]");
+  let vazios=0;
+  inputs.forEach(inp=>{
+    const v=inp.value.trim();
+    if(v===""||isNaN(+v)){ vazios++; inp.style.borderColor="#dc2626"; inp.style.background="#fef2f2"; }
+    else { inp.style.borderColor=""; inp.style.background=""; }
+  });
+  if(vazios>0) erros.push(`Preencha todos os ${inputs.length} campos de escore bruto.`);
+  return {ok:erros.length===0,erros,idade};
+}
+function mostrarErros(erros){
+  if(erros.length===0){ errosCalc.innerHTML=""; return; }
+  errosCalc.innerHTML=erros.map(e=>`<div class="vmsg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v6m0 4h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>${e}</div>`).join("");
+}
+
+/* ============================================================================
+   ESCALA DE PERCENTIL
+   ============================================================================ */
+function renderScale(pct){
+  $("scaleTrack").innerHTML=CLASSIFICACAO.map(c=>`<span style="width:${c.max-c.min+1}%;background:${c.cor};" title="${c.rotulo}"></span>`).join("");
+  $("scaleMark").style.left=`calc(${pct}% - 1.5px)`;
+}
+
+/* ============================================================================
+   LAUDO E INTERPRETAÇÃO
+   ============================================================================ */
+function primeiroNome(n){ return (n||"o paciente").trim().split(/\s+/)[0]; }
+function gerarLaudo(t,ctx,r,pct,clas){
+  const p=primeiroNome(ctx.nome);
+  const anoTxt=ctx.idade?`${ctx.idade} anos`:"";
+  const escTxt=ctx.escolaridade?`com escolaridade ${ctx.escolaridade.toLowerCase()}`:"";
+  const fem=ctx.sexo==="Feminino";
+  const pron=fem?"posicionando-a":"posicionando-o";
+  let valorTxt;
+  if(t.escala==="QI") valorTxt=`QI = ${r.valor} (Z = ${r.z.toFixed(2)})`;
+  else if(t.escala==="T") valorTxt=`T-score = ${r.valor} (Z = ${r.z.toFixed(2)})`;
+  else if(t.escala==="PCT") valorTxt=`Percentil = ${r.valor} (Z = ${r.z.toFixed(2)})`;
+  else valorTxt=`Z = ${r.z.toFixed(2)}`;
+  return `Na aplicação do ${t.nome_curto} (${t.categoria.toLowerCase()}), ${p} (${anoTxt}, sexo ${ctx.sexo.toLowerCase()}, ${escTxt}) obteve escore bruto de ${r.bruto} (${r.brutoDesc}), correspondente a ${valorTxt}, ${pron} no ${pct}º percentil da amostra normativa. O desempenho foi classificado como ${clas.rotulo.toUpperCase()}. Fonte normativa: ${t.fonte}.`;
+}
+function gerarInterp(clas,t){
+  const map={
+    "Deficitário":`Desempenho significativamente abaixo da média esperada (${clas.rotulo}). Sugere comprometimento relevante na função avaliada (${t.categoria.toLowerCase()}) — indica investigação clínica complementar.`,
+    "Limítrofe":`Desempenho no limite inferior (${clas.rotulo}). Embora dentro da variabilidade esperada, merece atenção e cruzamento com demais resultados do protocolo.`,
+    "Média Inferior":`Desempenho abaixo da média, porém não patológico (${clas.rotulo}). Sugere leve rebaixamento em ${t.categoria.toLowerCase()}; considerar ansiedade, fadiga ou escolaridade.`,
+    "Médio Inferior":`Desempenho ligeiramente abaixo da média (${clas.rotulo}). Resultado dentro da normalidade inferior; sem prejuízo clinicamente significativo.`,
+    "Médio":`Desempenho dentro dos limites esperados para a faixa etária e escolaridade (${clas.rotulo}). Não sugere prejuízo na função avaliada (${t.categoria.toLowerCase()}).`,
+    "Médio Superior":`Desempenho acima da média (${clas.rotulo}). Indica funcionamento favorável em ${t.categoria.toLowerCase()}.`,
+    "Superior":`Desempenho superior ao esperado (${clas.rotulo}). Indica ponto forte em ${t.categoria.toLowerCase()}.`,
+    "Muito Superior":`Desempenho muito superior à média normativa (${clas.rotulo}). Indica domínio destacado em ${t.categoria.toLowerCase()}.`
+  };
+  return map[clas.rotulo]||map["Médio"];
+}
+
+/* ============================================================================
+   AÇÃO: CALCULAR
+   ============================================================================ */
+function calcular(){
+  if(!testeAtual){ toast("Selecione um teste primeiro."); return; }
+  const v=validar(); mostrarErros(v.erros);
+  if(!v.ok) return;
+  const ctx={
+    nome:$("pNome").value.trim(),
+    sexo:$("pSexo").value,
+    escolaridade:$("pEsc").value,
+    idade:v.idade?v.idade.anos:null
+  };
+  const vals={};
+  camposTeste.querySelectorAll("input[type=number]").forEach(inp=>{ vals[inp.dataset.k]=inp.value; });
+  const r=testeAtual.calcular(vals,ctx);
+  const pct=zToPercentil(r.z);
+  const clas=classificar(pct);
+
+  // hero
+  $("rBruto").textContent=r.bruto;
+  $("rBrutoDesc").textContent=r.brutoDesc;
+  $("rTransLabel").textContent=r.valorLabel;
+  $("rTransformado").textContent=r.valor;
+  $("rZdesc").textContent=`Z = ${r.z.toFixed(2)}  •  M=${r.media}, DP=${r.dp}`;
+  $("rClassif").textContent=clas.rotulo;
+  $("rPct").textContent=pct;
+  $("classifBar").style.background=`linear-gradient(135deg, ${clas.cor}, ${shade(clas.cor,-18)})`;
+  $("normaTxt").innerHTML=
+    `Norma aplicada: <b>${testeAtual.nome_curto}</b> estratificada por <b>idade ${ctx.idade||"—"} anos</b> e `+
+    `<b>escolaridade ${ctx.escolaridade}</b>. Média ajustada = <b>${r.media}</b> (DP ${r.dp}).<br>`+
+    `<span style="color:#a16207;">Fonte: ${testeAtual.fonte} — Resolução CFP 31/2022.</span>`;
+
+  // multidimensional (BFP e similares)
+  if(r.multi && r.multi.length){
+    multiBox.style.display="block";
+    multiTable.innerHTML=`<tr><th>Dimensão</th><th>Bruto</th><th>Z</th><th>Percentil</th><th>Classificação</th></tr>`+
+      r.multi.map(m=>`<tr><td class="dim">${m.dim}</td><td>${m.bruto}</td><td>${m.z.toFixed(2)}</td><td class="pct">${m.pct}</td><td style="color:${m.classif.cor};font-weight:600;">${m.classif.rotulo}</td></tr>`).join("");
+  } else {
+    multiBox.style.display="none";
+  }
+
+  const laudo=gerarLaudo(testeAtual,ctx,r,pct,clas);
+  $("rLaudo").textContent=laudo;
+  $("rInterp").textContent=gerarInterp(clas,testeAtual);
+  renderScale(pct);
+
+  resultEmpty.style.display="none";
+  resultBox.classList.remove("show");
+  void resultBox.offsetWidth;
+  resultBox.classList.add("show");
+
+  // progresso
+  calculados.add(testeAtual.id);
+  progFill.style.width=(calculados.size/TESTES.length*100)+"%";
+  $("hdrCount").textContent=TESTES.length;
+}
+
+/* util: escurecer cor hex */
+function shade(hex,amt){
+  let c=hex.replace("#","");
+  if(c.length===3) c=c.split("").map(x=>x+x).join("");
+  let r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);
+  r=Math.max(0,Math.min(255,r+amt));g=Math.max(0,Math.min(255,g+amt));b=Math.max(0,Math.min(255,b+amt));
+  return "#"+[r,g,b].map(x=>("0"+x.toString(16)).slice(-2)).join("");
+}
+
+/* ============================================================================
+   TOAST
+   ============================================================================ */
+function toast(msg){
+  toastEl.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="m8 12 3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${msg}`;
+  toastEl.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t=setTimeout(()=>toastEl.classList.remove("show"),2400);
+}
+
+/* ============================================================================
+   EVENTOS
+   ============================================================================ */
+$("pNasc").addEventListener("input",atualizarIdade);
+busca.addEventListener("input",renderList);
+$("btnCalc").addEventListener("click",calcular);
+$("btnSalvar").addEventListener("click",e=>{
+  const b=e.currentTarget, original=b.innerHTML;
+  b.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="#16a34a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Salvo no prontuário`;
+  b.style.color="#16a34a";b.style.borderColor="#bbf7d0";b.style.background="#f0fdf4";
+  toast("Paciente salvo no prontuário (demonstração)");
+  setTimeout(()=>{ b.innerHTML=original;b.style.color="";b.style.borderColor="";b.style.background=""; },2200);
+});
+$("btnCopy").addEventListener("click",()=>{
+  const txt=$("rLaudo").textContent;
+  const done=()=>{ const b=$("btnCopy"); b.classList.add("done");
+    b.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiado!`;
+    setTimeout(()=>{ b.classList.remove("done"); b.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 15V5a2 2 0 0 1 2-2h10" stroke="currentColor" stroke-width="1.8"/></svg> Copiar laudo`; },1800);
+    toast("Laudo copiado para a área de transferência");
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(()=>fallbackCopy(txt,done));
+  } else fallbackCopy(txt,done);
+});
+function fallbackCopy(txt,cb){
+  const ta=document.createElement("textarea");ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();
+  try{ document.execCommand("copy");cb(); }catch(e){ toast("Não foi possível copiar"); }
+  document.body.removeChild(ta);
+}
+document.addEventListener("keydown",e=>{ if(e.key==="Enter"&&e.target.tagName==="INPUT"&&e.target.type==="number") calcular(); });
+
+/* ============================================================================
+   INIT
+   ============================================================================ */
+$("hdrCount").textContent=TESTES.length;
+renderChips();
+renderList();
+atualizarIdade();
+</script>
+</body>
+</html>
