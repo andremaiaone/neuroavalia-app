@@ -231,6 +231,38 @@
   .results-table th{color:var(--ink-3);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:.3px;}
   .results-table td.dim{font-weight:600;color:var(--ink-2);text-align:left;}
   .results-table td.pct{font-weight:700;color:var(--primary-700);}
+  /* ===================== VALIDAÇÃO (camada de schemas) ===================== */
+  input.v-invalid,select.v-invalid{
+    border-color:#e5484d!important;background:#fef2f2!important;
+    box-shadow:0 0 0 3px rgba(229,72,77,.16)!important;}
+  input.v-valid,select.v-valid{
+    border-color:#4cb782!important;background:#f0fdf4!important;
+    box-shadow:0 0 0 3px rgba(76,183,130,.18)!important;}
+  .field.v-invalid > .lbl{color:#c1132b;}
+  .field .req{color:#e5484d;margin-left:3px;font-weight:700;}
+  .field-err{font-size:11px;color:#c1132b;margin:5px 2px 0;display:flex;align-items:center;gap:5px;
+    line-height:1.3;animation:rise .18s ease;}
+  .field-hint-range{font-size:10.5px;color:var(--ink-4);margin:4px 2px 0;font-weight:500;}
+  /* caixa de erros de cálculo (bloqueio) */
+  .err-box{background:#fef2f2;border:1px solid #fecaca;border-radius:var(--radius-sm);
+    padding:11px 13px;margin-top:4px;margin-bottom:4px;animation:rise .2s ease;}
+  .err-box .err-head{font-size:12px;font-weight:700;color:#b91c1c;display:flex;align-items:center;gap:7px;
+    margin-bottom:7px;letter-spacing:.2px;}
+  .err-box .err-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px;}
+  .err-box .err-list li{font-size:11.5px;color:#7f1d1d;line-height:1.4;display:flex;align-items:flex-start;gap:6px;
+    background:rgba(255,255,255,.55);padding:5px 8px;border-radius:6px;}
+  /* avisos (não bloqueiam): idade fora da faixa, inversão de sinal */
+  .warn-box{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--radius-sm);
+    padding:10px 12px;margin-bottom:10px;display:flex;gap:9px;align-items:flex-start;animation:rise .2s ease;}
+  .warn-box .ic{color:#d97706;flex:none;margin-top:1px;}
+  .warn-box .t{font-size:11.5px;color:#78350f;line-height:1.5;}
+  .warn-box .t b{color:#92400e;}
+  /* badges informativos (inversão de sinal, etc.) */
+  .badge.info{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
+  .badge.info .d{background:#2563eb;}
+  /* campo select e texto validam igual aos numéricos */
+  .field select{margin-top:0;}
+  .likert-hint{font-size:10px;color:var(--ink-3);margin-top:3px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -541,6 +573,90 @@ function idadeDeltaZ(idade){ if(!idade) return 0; return -Math.max(0,(idade-40)/
                              media, dp, multi?:[{dim,bruto,z,pct,classif}] }
    ctx = { nome, sexo, escolaridade, idade }
    ============================================================================ */
+/* ============================================================================
+   SCHEMAS DE VALIDAÇÃO (embutido de schemas.json — 47 testes)
+   Campos min/max/obrigatorio + regras de consistência. Consultado pela UI
+   para validar em tempo real e bloquear cálculo. NÃO substitui TESTES (que
+   mantém calcular/original para testes sem schema). A camada de validação
+   roda ANTES do cálculo.
+   ============================================================================ */
+const SCHEMAS = {"wisc_iv":{"nome":"WISC-IV","faixa_etaria":{"min":72,"max":216,"unidade":"meses","label":"6 a 16 anos 11 meses"},"estratificacao_obrigatoria":["idade_meses","escolaridade"],"fonte_normativa":"Tabela A8.1 (Br) - Wechsler; Flanagan & Kaufman 2009","campos":[{"id":"sm","label":"Semelhanças","tipo":"inteiro","min":0,"max":32,"obrigatorio":true},{"id":"vc","label":"Vocabulário","tipo":"inteiro","min":0,"max":68,"obrigatorio":true},{"id":"md","label":"Dígitos","tipo":"inteiro","min":0,"max":48,"obrigatorio":true},{"id":"cd","label":"Conhecimentos","tipo":"inteiro","min":0,"max":32,"obrigatorio":false},{"id":"ss","label":"Sucessão de Números e Letras","tipo":"inteiro","min":0,"max":46,"obrigatorio":false},{"id":"cl","label":"Cubos","tipo":"inteiro","min":0,"max":68,"obrigatorio":true},{"id":"rv","label":"Raciocínio Matricial","tipo":"inteiro","min":0,"max":35,"obrigatorio":true},{"id":"co","label":"Conceitos com Imagens","tipo":"inteiro","min":0,"max":28,"obrigatorio":false},{"id":"procurar_simbolos","label":"Procurar Símbolos","tipo":"inteiro","min":0,"max":60,"obrigatorio":false}],"regras_consistencia":[{"id":"minimo_subtestes","descricao":"Mínimo 4 subtestes preenchidos para cálculo","tipo":"quantidade_obrigatoria","min":4},{"id":"idade_no_range","descricao":"Idade entre 6:0 e 16:11","tipo":"range_idade"}],"calcula":{"indices":{"ICV":{"subtestes":["sm","vc"],"descricao":"Índice de Compreensão Verbal"},"IOP":{"subtestes":["cl","rv"],"descricao":"Índice de Organização Perceptual"},"IMO":{"subtestes":["md","ss"],"descricao":"Índice de Memória Operacional"},"IVP":{"subtestes":["procurar_simbolos","co"],"descricao":"Índice de Velocidade de Processamento"}},"qi_total":"Média dos índices → Tabela A.5 (Br) → QI","classificacao":"Wechsler: ≤69 Def, 70-79 Lim, 80-89 MInf, 90-109 M, 110-119 MS, 120-129 S, ≥130 MSup"}},"ravlt":{"nome":"RAVLT - Teste de Aprendizagem Auditivo-Verbal de Rey","faixa_etaria":{"min":72,"max":1104,"unidade":"meses","label":"6 a 92 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Malloy-Diniz et al., tabela pag 53","campos":[{"id":"a1","label":"Evocação I (A1)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"a2","label":"Evocação II (A2)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"a3","label":"Evocação III (A3)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"a4","label":"Evocação IV (A4)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"a5","label":"Evocação V (A5)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"b1","label":"Lista B (interferência)","tipo":"inteiro","min":0,"max":15,"obrigatorio":false},{"id":"a6","label":"Evocação Tardia (A6) - após 20min","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"reconhecimento","label":"Reconhecimento (A7)","tipo":"inteiro","min":0,"max":30,"obrigatorio":false}],"regras_consistencia":[{"id":"trial_max_15","descricao":"Cada trial A não pode exceder 15 (número de palavras da lista)","tipo":"maximo_por_campo","campo_prefix":"a","max":15},{"id":"tendencia_crescente","descricao":"Espera-se A2≥A1, A3≥A2 (curva de aprendizagem). Alerta se decrescer significativamente.","tipo":"tendencia_esperada","alerta_nao_bloqueia":true}],"calcula":{"total_aprendizado":"Soma de A1 a A5 (máx 75)","indice_retensao":"A6 / A5 * 100","z_score":"Tabela estratificada por idade e escolaridade (Malloy-Diniz)","classificacao":"Curva normal Spreen & Strauss"}},"ac":{"nome":"Teste de Atenção Concentrada (AC)","faixa_etaria":{"min":72,"max":984,"unidade":"meses","label":"6 a 82 anos"},"estratificacao_obrigatoria":["idade","escolaridade","regiao"],"fonte_normativa":"Cambraia SV - Vetor 2018 - Tabelas 14-19 por região","campos":[{"id":"acertos","label":"Acertos (A)","tipo":"inteiro","min":0,"max":180,"obrigatorio":true},{"id":"erros","label":"Erros (E)","tipo":"inteiro","min":0,"max":180,"obrigatorio":true},{"id":"omissoes","label":"Omissões (O)","tipo":"inteiro","min":0,"max":180,"obrigatorio":true},{"id":"tempo","label":"Tempo total (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true}],"regras_consistencia":[{"id":"pontos_positivo","descricao":"Pontos = A - E - O deve ser ≥ 0","tipo":"formula","formula":"A - E - O","min_resultado":0},{"id":"pontos_maximo","descricao":"Pontos não pode exceder 180 (total de itens)","tipo":"formula_max","formula":"A - E - O","max":180}],"calcula":{"pontos":"A - E - O","percentil":"Tabela por região (Sul/Sudeste/Centro-Oeste/Nordeste/Norte) e escolaridade (Fund/Médio/Superior/Total)","classificacao":"≤4 Deficitário, 5-9 Inferior, 10-25 Médio Inferior, 26-75 Médio, 76-90 Médio Superior, 91-96 Superior, ≥97 Muito Superior"}},"ac_15":{"nome":"Teste de Atencao Concentrada 15 itens (AC-15)","faixa_etaria":{"min":72,"max":984,"unidade":"meses","label":"6 a 82 anos","_estimado":true,"_nota":"Mesma faixa do AC, versao reduzida"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Cambraia SV - Vetor (AC-15)","campos":[{"id":"qe","label":"Questoes examinadas (QE)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"erros","label":"Erros","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"tempo","label":"Tempo total (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":false}],"regras_consistencia":[{"id":"acertos_max","descricao":"Acertos = QE - Erros nao pode exceder QE","tipo":"formula_max","formula":"QE - Erros","referencia":"qe"},{"id":"erros_le_qe","descricao":"Erros nao pode exceder o total de questoes examinadas","tipo":"comparacao_campo","campo_a":"erros","operador":"<=","campo_b":"qe"}],"calcula":{"acertos":"QE - Erros","pontos":"Acertos - Erros","percentil":"Tabela AC-15 por idade e escolaridade","classificacao":"Guilmette: <=4 Deficitario, 5-9 Inferior, 10-25 Medio Inferior, 26-75 Medio, 76-90 Medio Superior, 91-96 Superior, >=97 Muito Superior"}},"wais_iii":{"nome":"WAIS-III - Escala Wechsler de Inteligencia para Adultos","faixa_etaria":{"min":192,"max":1068,"unidade":"meses","label":"16 a 89 anos"},"estratificacao_obrigatoria":["idade_meses","escolaridade"],"fonte_normativa":"Tabela A.1 (Br) - Wechsler; adaptacao brasileira","campos":[{"id":"cf","label":"Completar Figuras","tipo":"inteiro","min":0,"max":19,"obrigatorio":true},{"id":"vc_vocab","label":"Vocabulario","tipo":"inteiro","min":0,"max":68,"obrigatorio":true},{"id":"sm","label":"Semelhancas","tipo":"inteiro","min":0,"max":38,"obrigatorio":true},{"id":"ar","label":"Aritmetica","tipo":"inteiro","min":0,"max":22,"obrigatorio":false},{"id":"digitos","label":"Digitos","tipo":"inteiro","min":0,"max":48,"obrigatorio":false},{"id":"informacao","label":"Informacao (Conhecimentos)","tipo":"inteiro","min":0,"max":29,"obrigatorio":false},{"id":"cl","label":"Cubos","tipo":"inteiro","min":0,"max":68,"obrigatorio":true},{"id":"rm","label":"Raciocinio Matricial","tipo":"inteiro","min":0,"max":26,"obrigatorio":true},{"id":"digitos_simbolos","label":"Digitos-Simbolos (Codigos)","tipo":"inteiro","min":0,"max":133,"obrigatorio":true}],"regras_consistencia":[{"id":"minimo_subtestes","descricao":"Minimo 4 subtestes preenchidos (recomendado 7 para QI completo)","tipo":"quantidade_obrigatoria","min":4},{"id":"idade_no_range","descricao":"Idade entre 16:0 e 89:11","tipo":"range_idade"}],"calcula":{"indices":{"ICV":{"subtestes":["vc_vocab","sm","informacao"],"descricao":"Indice de Compreensao Verbal"},"IOP":{"subtestes":["cf","cl","rm"],"descricao":"Indice de Organizacao Perceptual"},"IMO":{"subtestes":["ar","digitos"],"descricao":"Indice de Memoria Operacional"},"IVP":{"subtestes":["digitos_simbolos"],"descricao":"Indice de Velocidade de Processamento"}},"qi_total":"Soma dos ponderados -> Tabela de QI composto","classificacao":"Wechsler: <=69 Def, 70-79 Lim, 80-89 MInf, 90-109 M, 110-119 MS, 120-129 S, >=130 MSup"}},"wasi":{"nome":"WASI - Escala Wechsler Abreviada de Inteligencia","faixa_etaria":{"min":72,"max":1068,"unidade":"meses","label":"6 a 89 anos"},"estratificacao_obrigatoria":["idade_meses"],"fonte_normativa":"WASI Manual Tecnico (Br) - Tabelas A.1.1 a A.1.22 + A.2 a A.6. Wechsler, adaptacao Casa do Psicologo","campos":[{"id":"vocabulario","label":"Vocabulario (T)","tipo":"inteiro","min":0,"max":42,"obrigatorio":true},{"id":"cubos","label":"Cubos","tipo":"inteiro","min":0,"max":51,"obrigatorio":true},{"id":"semelhancas","label":"Semelhancas","tipo":"inteiro","min":0,"max":42,"obrigatorio":false},{"id":"matrizes","label":"Raciocinio Matricial","tipo":"inteiro","min":0,"max":35,"obrigatorio":false},{"id":"forma","label":"Forma aplicada","tipo":"select","opcoes":["2-subtestes (Vocabulario + Cubos)","4-subtestes (Vocabulario + Cubos + Semelhancas + Matrizes)"],"obrigatorio":true}],"regras_consistencia":[{"id":"minimo_subtestes","descricao":"Forma 2-subtestes exige Vocabulario + Cubos; Forma 4-subtestes exige todos os 4","tipo":"quantidade_obrigatoria_condicional","condicao":"forma == '4-subtestes'","min":4},{"id":"idade_no_range","descricao":"Idade entre 6:0 e 89:11","tipo":"range_idade"},{"id":"crit_interrupcao_vocabulario","descricao":"Vocabulario itens 5-42: critica a escore se aplicar regras de item inicial (6-8 anos comeca item 1; 9-89 anos comeca item 9)","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"escore_t":"Tabela A.1.x por subteste (escalada por idade em meses)","qi_composto":"Forma 2: T(Vocab)+T(Cubos) -> Tabela A.4; Forma 4: soma dos 4 T -> Tabela A.5","idade_mental":"Derivada do percentil do QI","classificacao":"Wechsler: <=69 Def, 70-79 Lim, 80-89 MInf, 90-109 M, 110-119 MS, 120-129 S, >=130 MSup"}},"bpa":{"nome":"Bateria de Provas de Atencao (BPA)","faixa_etaria":{"min":72,"max":984,"unidade":"meses","label":"6 a 82 anos (faixas: 6-10, 11-17, 18-25, 26-30, 31-50, 51+)"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"BPA Manual Completo - Marin Rueda FJ. Vetor Editora. Tabelas 1-9","campos":[{"id":"erros","label":"Erros","tipo":"inteiro","min":0,"max":280,"obrigatorio":true},{"id":"omissoes","label":"Omissoes","tipo":"inteiro","min":0,"max":280,"obrigatorio":true},{"id":"auto_correcoes","label":"Auto Correcoes","tipo":"inteiro","min":0,"max":280,"obrigatorio":false},{"id":"total","label":"TOTAL (acertos)","tipo":"inteiro","min":0,"max":280,"obrigatorio":true},{"id":"subteste","label":"Subteste aplicado","tipo":"select","opcoes":["TACOM A","TACOM B","TACOM C","TACOM D","TADIS 1","TADIS 2","TACOM A/B","Outro"],"obrigatorio":true}],"regras_consistencia":[{"id":"pontos_positivo","descricao":"TOTAL deve ser >= 0 apos subtrair erros/omissoes","tipo":"formula","formula":"TOTAL - Erros - Omissoes","min_resultado":0},{"id":"max_280","descricao":"Soma de estímulos (alvos + distratores) limitada pelo subteste (TADIS2=8 alvos, TACOM=~7 alvos + 14 distratores)","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"tempo_subteste","descricao":"Cada subteste tem tempo fixo (ex: TADIS=3min, TACOM=5min). Conferir tempo de aplicacao.","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"pontos":"TOTAL - Erros - Omissoes (a depender do subteste)","percentil":"Tabela por faixa etaria (6 faixas) e escolaridade","classificacao":"Guilmette"}},"d2_r":{"nome":"Teste d2 Revisado (d2-R)","faixa_etaria":{"min":108,"max":960,"unidade":"meses","label":"9 a 80 anos"},"estratificacao_obrigatoria":["idade","escolaridade","sexo"],"fonte_normativa":"Brickenkamp - d2-R, tabelas normativas brasileiras","campos":[{"id":"oap","label":"OAP - Ocorrencias com Alvo Processadas (total de caracteres processados)","tipo":"inteiro","min":0,"max":657,"obrigatorio":true},{"id":"eo","label":"Erros de Omissao (EO)","tipo":"inteiro","min":0,"max":657,"obrigatorio":true},{"id":"et","label":"Erros de Troca/confusao (ET)","tipo":"inteiro","min":0,"max":657,"obrigatorio":true},{"id":"dc","label":"Diferenca de Quantidade (DC) - linha com mais menos linha com menos acertos","tipo":"numero","min":0,"max":200,"obrigatorio":true},{"id":"total_ss","label":"Total de Acertos (soma das linhas, SS)","tipo":"inteiro","min":0,"max":657,"obrigatorio":true},{"id":"e_percent","label":"E% - Indice de Qualidade/Concentracao","tipo":"numero","min":0,"max":100,"obrigatorio":true}],"regras_consistencia":[{"id":"tn_oap","descricao":"TN (Total-Net) = Total_SS - (EO + ET) deve ser >= 0","tipo":"formula","formula":"Total_SS - (EO + ET)","min_resultado":0},{"id":"tn_le_oap","descricao":"TN nao pode exceder OAP (acertos liquidos <= total processado)","tipo":"comparacao_formula","formula":"Total_SS - (EO + ET)","operador":"<=","campo_b":"oap"},{"id":"e_percent_range","descricao":"E% entre 0 e 100; valores >15% sugerem baixa qualidade (alerta)","tipo":"alerta_clinico","limite_alerta":15,"alerta_nao_bloqueia":true}],"calcula":{"tn":"Total_SS - (EO + ET)","cp":"TN / OAP * 100 (qualidade do desempenho)","e_percent":"(EO + ET) / OAP * 100","z_score":"Tabela d2-R por idade, escolaridade e sexo","classificacao":"Muito baixo / baixo / medio / alto / muito alto"}},"fdt":{"nome":"Five Digit Test (FDT)","faixa_etaria":{"min":60,"max":1104,"unidade":"meses","label":"5 a 92 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"FDT - Tabela 6.2, normas por idade (N=1033)","campos":[{"id":"t_leitura","label":"Parte 1 - Leitura: tempo (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"e_leitura","label":"Parte 1 - Leitura: erros","tipo":"inteiro","min":0,"max":50,"obrigatorio":true},{"id":"t_contagem","label":"Parte 2 - Contagem: tempo (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"e_contagem","label":"Parte 2 - Contagem: erros","tipo":"inteiro","min":0,"max":50,"obrigatorio":true},{"id":"t_selecao","label":"Parte 3 - Selecao: tempo (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"e_selecao","label":"Parte 3 - Selecao: erros","tipo":"inteiro","min":0,"max":50,"obrigatorio":true},{"id":"t_alternancia","label":"Parte 4 - Alternancia: tempo (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"e_alternancia","label":"Parte 4 - Alternancia: erros","tipo":"inteiro","min":0,"max":50,"obrigatorio":true}],"regras_consistencia":[{"id":"tempo_crescente","descricao":"Espera-se tempo crescente: Leitura < Contagem < Selecao < Alternancia. Tempo de Alternancia muito inferior a Contagem sugere erro de registro.","tipo":"tendencia_esperada","alerta_nao_bloqueia":true},{"id":"tempo_invertido","descricao":"Menor tempo = melhor desempenho. Z deve ser invertido antes de classificar.","tipo":"inversao_sinal","campos":["t_leitura","t_contagem","t_selecao","t_alternancia"]},{"id":"indices_interferencia","descricao":"Parte 3 - Parte 2 = interferencia cognitiva; Parte 4 - Parte 2 = flexibilidade","tipo":"formula_derivada","alerta_nao_bloqueia":true}],"calcula":{"z_score":"Tabela 6.2 estratificada por idade (N=1033)","classificacao":"Guilmette"}},"go_no_go":{"nome":"Go/No-Go Test","faixa_etaria":{"min":60,"max":1104,"unidade":"meses","label":"5 a 92 anos","_estimado":true,"_nota":"Faixa generica, depende da versao"},"estratificacao_obrigatoria":["idade"],"fonte_normativa":"Normas presentes na bateria do laboratorio (sem citacao explicita)","campos":[{"id":"acertos_go","label":"Acertos Go (respostas corretas)","tipo":"inteiro","min":0,"max":200,"obrigatorio":true},{"id":"omissoes_go","label":"Omissoes Go (falhou em responder)","tipo":"inteiro","min":0,"max":200,"obrigatorio":true},{"id":"erros_nogo","label":"Erros No-Go (respondeu quando nao devia / falsos alarmes)","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"tempo_medio_reacao","label":"Tempo medio de reacao (ms)","tipo":"numero","min":0,"max":5000,"obrigatorio":false},{"id":"acertos_nogo","label":"Acertos No-Go (inibiu corretamente)","tipo":"inteiro","min":0,"max":100,"obrigatorio":false}],"regras_consistencia":[{"id":"omissoes_go_validas","descricao":"Omissoes Go + Acertos Go nao pode exceder total de trials Go","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"rt_plausivel","descricao":"Tempo de reacao tipicamente 200-1500ms; <150ms sugere chute, >3000ms sugere desatencao","tipo":"alerta_clinico","alerta_nao_bloqueia":true,"min_esperado":150,"max_esperado":3000}],"calcula":{"indice_inibicao":"Acertos No-Go / (Acertos No-Go + Erros No-Go)","z_score":"Normas internas (sem citacao)","classificacao":"A definir pela equipe clinica"}},"ped_vr":{"nome":"Prova de Evaluacao de Disgrafia (PED-VR)","faixa_etaria":{"min":84,"max":180,"unidade":"meses","label":"7 a 15 anos","_estimado":true},"estratificacao_obrigatoria":["idade","serie_escolar"],"fonte_normativa":"PED-VR - Tabela 6.2","campos":[{"id":"acres","label":"Acrescimos","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"omis","label":"Omissoes","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"corr","label":"Corretos","tipo":"inteiro","min":0,"max":200,"obrigatorio":true},{"id":"posis","label":"Erros de Posicao","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"ortog","label":"Erros Ortograficos","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"acent","label":"Erros de Acentuacao","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"erro","label":"Total de erros","tipo":"inteiro","min":0,"max":500,"obrigatorio":true}],"regras_consistencia":[{"id":"soma_erros","descricao":"Total de erros deve aproximar soma de posis + ortog + acent + acres + omis","tipo":"formula_derivada","formula":"posis + ortog + acent + acres + omis","referencia":"erro","tolerancia":5},{"id":"tempo_aplicacao","descricao":"Aplicacao com tempo controlado (copiar texto padrao)","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"pontos_brutos":"Soma de erros (quanto menor, melhor)","z_score":"Tabela 6.2 por idade e serie escolar","classificacao":"Guilmette"}},"hvlt_r":{"nome":"Hopkins Verbal Learning Test - Revised (HVLT-R)","faixa_etaria":{"min":216,"max":1020,"unidade":"meses","label":"18 a 85 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Miotto EC et al. 2012 - Arq Neuro-Psiquiatr","campos":[{"id":"t1","label":"Trial 1 - Evocacao livre (12 palavras)","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"t2","label":"Trial 2 - Evocacao livre","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"t3","label":"Trial 3 - Evocacao livre","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"tardia","label":"Evocacao tardia (Trial 4, 20-25min)","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"reconhecimento","label":"Reconhecimento (hits - falsos alarmes)","tipo":"inteiro","min":-12,"max":24,"obrigatorio":false}],"regras_consistencia":[{"id":"trial_max_12","descricao":"Cada trial nao pode exceder 12 (numero de palavras da lista)","tipo":"maximo_por_campo","max":12,"campos":["t1","t2","t3","tardia"]},{"id":"tendencia_crescente","descricao":"Espera-se curva de aprendizagem crescente T1<=T2<=T3","tipo":"tendencia_esperada","alerta_nao_bloqueia":true}],"calcula":{"total_aprendizado":"T1 + T2 + T3 (max 36)","indice_retensao":"Tardia / T3 * 100","z_score":"Miotto et al. 2012 - estratificado por idade e escolaridade (4 faixas)","classificacao":"Curva normal"}},"bvmt_r":{"nome":"Brief Visuospatial Memory Test - Revised (BVMT-R)","faixa_etaria":{"min":216,"max":1020,"unidade":"meses","label":"18 a 85 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Miotto EC et al. 2012 - Arq Neuro-Psiquiatr","campos":[{"id":"t1","label":"Trial 1 - Evocacao (6 figuras, 12 pontos)","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"t2","label":"Trial 2 - Evocacao","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"t3","label":"Trial 3 - Evocacao","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"tardia","label":"Evocacao tardia (Trial 4, 25min)","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"reconhecimento","label":"Reconhecimento","tipo":"inteiro","min":0,"max":12,"obrigatorio":false}],"regras_consistencia":[{"id":"trial_max_12","descricao":"Cada trial limitado a 12 pontos (6 figuras x 2 pontos cada)","tipo":"maximo_por_campo","max":12,"campos":["t1","t2","t3","tardia"]},{"id":"tendencia_crescente","descricao":"Curva de aprendizagem crescente T1<=T2<=T3 esperada","tipo":"tendencia_esperada","alerta_nao_bloqueia":true}],"calcula":{"total_aprendizado":"T1 + T2 + T3 (max 36)","indice_retensao":"Tardia / T3 * 100","z_score":"Miotto et al. 2012 - idade e escolaridade (corte >=12 anos vs <12)","classificacao":"Curva normal"}},"7fig_7pal":{"nome":"7 Figuras 7 Palavras (7FIG-7PAL)","faixa_etaria":{"min":216,"max":1020,"unidade":"meses","label":"18 a 85 anos","_estimado":true},"estratificacao_obrigatoria":["idade","escolaridade","tipo_estimulo"],"fonte_normativa":"Dados normativos documentados (bateria SE-7M / Ivnik)","campos":[{"id":"tipo_estimulo","label":"Tipo de estimulo","tipo":"select","opcoes":["Auditiva","Visual"],"obrigatorio":true},{"id":"t1","label":"Trial 1 (max 7)","tipo":"inteiro","min":0,"max":7,"obrigatorio":true},{"id":"t2","label":"Trial 2 (max 7)","tipo":"inteiro","min":0,"max":7,"obrigatorio":true},{"id":"t3","label":"Trial 3 (max 7)","tipo":"inteiro","min":0,"max":7,"obrigatorio":true},{"id":"tardia","label":"Evocacao tardia (max 7)","tipo":"inteiro","min":0,"max":7,"obrigatorio":true}],"regras_consistencia":[{"id":"trial_max_7","descricao":"Cada trial limitado a 7 itens (palavras ou figuras)","tipo":"maximo_por_campo","max":7,"campos":["t1","t2","t3","tardia"]}],"calcula":{"total_aprendizado":"T1 + T2 + T3 (max 21)","indice_retensao":"Tardia / T3 * 100","z_score":"Tabela estratificada por idade, escolaridade e tipo de estimulo","classificacao":"Curva normal"}},"tol":{"nome":"Torre de Londres (TOL)","faixa_etaria":{"min":84,"max":960,"unidade":"meses","label":"7 a 80 anos"},"estratificacao_obrigatoria":["idade"],"fonte_normativa":"Schlottefeldt et al. 2010 - Torre de Londres","campos":[{"id":"movtos_requeridos","label":"Movimentos requeridos (minimos para solucao)","tipo":"inteiro","min":3,"max":20,"obrigatorio":true},{"id":"movtos_executados","label":"Movimentos executados pelo paciente","tipo":"inteiro","min":0,"max":60,"obrigatorio":true},{"id":"tempo_execucao","label":"Tempo de execucao (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"tempo_planejamento","label":"Tempo de planejamento (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":false},{"id":"itens_resolvidos","label":"Itens resolvidos no limite de movimentos","tipo":"inteiro","min":0,"max":12,"obrigatorio":true}],"regras_consistencia":[{"id":"movtos_exec_ge_req","descricao":"Movimentos executados deve ser >= movimentos requeridos (se resolveu)","tipo":"comparacao_campo","campo_a":"movtos_executados","operador":">=","campo_b":"movtos_requeridos"},{"id":"tempo_invertido","descricao":"Menor tempo = melhor desempenho; Z deve ser invertido antes de classificar","tipo":"inversao_sinal","campos":["tempo_execucao","tempo_planejamento"]},{"id":"score_total","descricao":"Pontos compostos derivados da combinacao de movimentos + tempo + acertos","tipo":"formula_derivada","alerta_nao_bloqueia":true}],"calcula":{"pontos_brutos":"Soma dos itens resolvidos ponderada por nivel de dificuldade","pontuacao_padrao":"Schlottefeldt 2010, estratificada por idade","classificacao":"Sistema Guilmette"}},"hayling":{"nome":"Teste Hayling","faixa_etaria":{"min":216,"max":960,"unidade":"meses","label":"18 a 80 anos"},"estratificacao_obrigatoria":["idade"],"fonte_normativa":"Siqueira LS et al. - Fonseca & Prando (TAN)","campos":[{"id":"tempo_a","label":"Parte A - Tempo (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"erros_a","label":"Parte A - Total de Erros (resposta que completa a frase)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"tempo_b","label":"Parte B - Tempo (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"erros_b_tipo1","label":"Parte B - Erros tipo 1 (resposta conectada ao sentido)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"erros_b_tipo2","label":"Parte B - Erros tipo 2 (resposta nao conectada mas nao totalm. sem relacao)","tipo":"inteiro","min":0,"max":10,"obrigatorio":false}],"regras_consistencia":[{"id":"tempo_b_gt_a","descricao":"Parte B (inibicao) tipicamente mais lenta que Parte A; B-A mede eficiencia de inibicao","tipo":"tendencia_esperada","alerta_nao_bloqueia":true},{"id":"tempo_invertido","descricao":"Menor tempo = melhor desempenho; Z deve ser invertido","tipo":"inversao_sinal","campos":["tempo_a","tempo_b"]},{"id":"b_minus_a","descricao":"B-A (tempo) usado como indice de inibicao","tipo":"formula_derivada","formula":"tempo_b - tempo_a"}],"calcula":{"b_minus_a":"Tempo B - Tempo A","z_score":"Siqueira et al. estratificado por idade","classificacao":"Sistema Guilmette"}},"brief_2":{"nome":"BRIEF-2 - Behavior Rating Inventory of Executive Function","faixa_etaria":{"min":60,"max":228,"unidade":"meses","label":"5 a 18 anos"},"estratificacao_obrigatoria":["idade","sexo","informante"],"fonte_normativa":"BRIEF-2 - Tabela B1 pag 210","campos":[{"id":"informante","label":"Informante","tipo":"select","opcoes":["Pais/Cuidadores","Professores","Auto-relato"],"obrigatorio":true},{"id":"itens_gir","label":"Itens GIR (Inibicao) - 0-3 cada","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":13,"obrigatorio":true},{"id":"itens_em","label":"Itens EM (Monitoramento emocional) - 0-3 cada","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":10,"obrigatorio":true},{"id":"itens_cri","label":"Itens CRI (Inibicao cognitiva)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":10,"obrigatorio":false},{"id":"itens_im","label":"Itens IM (Memoria operacional)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":10,"obrigatorio":true},{"id":"itens_pmi","label":"Itens PMI (Organizacao de materiais)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":10,"obrigatorio":false},{"id":"itens_pln","label":"Itens PLN (Planejamento)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":10,"obrigatorio":true},{"id":"itens_task_monitor","label":"Itens Task-Monitor","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":7,"obrigatorio":false}],"regras_consistencia":[{"id":"likert_0_3","descricao":"Cada item deve estar entre 0 (Nunca) e 3 (Sempre). Fora disso = bloqueia.","tipo":"range_likert","min":0,"max":3},{"id":"tensao_negociacao","descricao":"Escore de Negatividade e Inconsistencia deve ser computado (> certos itens) e alerta se elevado","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"soma_por_escala","descricao":"Soma de itens por escala deve bater com num_itens; media usada para T","tipo":"soma_por_grupo","alerta_nao_bloqueia":true}],"calcula":{"t_scores":"Tabela B1 por idade, sexo e informante. T >=65 = clinicamente significativo","indices":{"BRI":{"descricao":"Behavior Regulation Index (GIR + EM + CRI)"},"MI":{"descricao":"Metacognition Index (IM + PMI + PLN + Task-Monitor)"},"GEC":{"descricao":"Global Executive Composite (BRI + MI)"}},"classificacao":"T <60 normal, 60-64 limiar/elevado, >=65 clinicamente elevado"}},"brief_p":{"nome":"BRIEF-Preschool (BRIEF-P)","faixa_etaria":{"min":24,"max":71,"unidade":"meses","label":"2 a 5 anos"},"estratificacao_obrigatoria":["idade","sexo","informante"],"fonte_normativa":"BRIEF-P - Tabela A10 pag 84","campos":[{"id":"informante","label":"Informante (Cuidadores)","tipo":"select","opcoes":["Pais/Cuidadores"],"obrigatorio":true},{"id":"itens_inibir","label":"Escala Inibir (0-3 cada)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":16,"obrigatorio":true},{"id":"itens_mudanca","label":"Escala Mudanca","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":10,"obrigatorio":true},{"id":"itens_controle_emocional","label":"Escala Controle Emocional","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":12,"obrigatorio":true},{"id":"itens_mem_trabalho","label":"Escala Memoria Operacional","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":17,"obrigatorio":true},{"id":"itens_planejar_organizar","label":"Escala Planejamento e Organizacao","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":19,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_0_3","descricao":"Cada item entre 0 (Nunca) e 3 (Sempre)","tipo":"range_likert","min":0,"max":3},{"id":"negatividade","descricao":"Calcular escore de Negatividade; >3 itens 3 = invalida","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"inconsistencia","descricao":"Itens pares em direcao oposta = inconsistencia; >4 inconsistencias = invalida","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"t_scores":"Tabela A10 por idade, sexo (informante = pais)","indices":{"ER":{"descricao":"Regulacao Emocional (Controle Emocional)"},"FR":{"descricao":"Regulacao Flexivel (Mudanca + Inibir)"},"WM":{"descricao":"Memoria Operacional"},"PO":{"descricao":"Planejamento/Organizacao"},"GEC":{"descricao":"Global Executive Composite"}},"classificacao":"T <60 normal, 60-64 elevado, >=65 clinicamente elevado"}},"bdefs":{"nome":"Barkley Deficits in Executive Functioning Scale (BDEFS)","faixa_etaria":{"min":216,"max":960,"unidade":"meses","label":"18 a 80 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Barkley - pag 155 do manual","campos":[{"id":"amostra","label":"Amostra normativa","tipo":"select","opcoes":["Amostra Geral","Ensino Medio","Ensino Superior","Pos-graduacao"],"obrigatorio":true},{"id":"itens_gestao_tempo","label":"Escala Gestao do Tempo (itens Likert 1-4)","tipo":"lista_likert","escala_min":1,"escala_max":4,"num_itens":5,"obrigatorio":true},{"id":"itens_procrastinacao","label":"Escala Auto-organizacao/Problemas com prazos","tipo":"lista_likert","escala_min":1,"escala_max":4,"num_itens":5,"obrigatorio":true},{"id":"itens_autodisciplina","label":"Escala Falta de Autodisciplina","tipo":"lista_likert","escala_min":1,"escala_max":4,"num_itens":5,"obrigatorio":true},{"id":"itens_resolucao_problemas","label":"Escala Manejo de Emocoes/Resolucao problemas","tipo":"lista_likert","escala_min":1,"escala_max":4,"num_itens":5,"obrigatorio":true},{"id":"itens_impulsividade","label":"Escala Impulsividade/Decisoes impulsivas","tipo":"lista_likert","escala_min":1,"escala_max":4,"num_itens":5,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_4","descricao":"Cada item entre 1 (Nunca/raramente) e 4 (Muito frequentemente)","tipo":"range_likert","min":1,"max":4}],"calcula":{"soma_por_escala":"Soma dos itens por fator (5 itens x 5 escalas = 25 itens curtos; versao completa = 89 itens)","percentil":"Tabela Barkley pag 155 por amostra (Geral/Medio/Superior/Pos-grad)","classificacao":"Percentil: >90 = deficit clinicamente significativo"}},"wsct48":{"nome":"Wisconsin Card Sorting Test - 48 cartas (WSCT-48)","faixa_etaria":{"min":108,"max":1068,"unidade":"meses","label":"9 a 89 anos","_estimado":true,"_nota":"Normas atuais da amostra italiana (Cianchetti), ver classificacao_testes"},"estratificacao_obrigatoria":["idade"],"fonte_normativa":"AMOSTRA ITALIANA - Cianchetti et al. (atencao: NAO brasileira)","campos":[{"id":"ensaios","label":"Ensaios administrados","tipo":"inteiro","min":48,"max":128,"obrigatorio":true},{"id":"categorias","label":"Categorias completadas","tipo":"inteiro","min":0,"max":6,"obrigatorio":true},{"id":"erros","label":"Erros totais","tipo":"inteiro","min":0,"max":128,"obrigatorio":true},{"id":"erros_perseverativos","label":"Erros perseverativos","tipo":"inteiro","min":0,"max":128,"obrigatorio":true},{"id":"respostas_perseverativas","label":"Respostas perseverativas","tipo":"inteiro","min":0,"max":128,"obrigatorio":true},{"id":"erros_nao_perseverativos","label":"Erros nao perseverativos","tipo":"inteiro","min":0,"max":128,"obrigatorio":false},{"id":"%_perseverativos","label":"% Erros perseverativos","tipo":"numero","min":0,"max":100,"obrigatorio":true},{"id":"aprendendo_aprender","label":"Falha em manter o principio","tipo":"inteiro","min":0,"max":6,"obrigatorio":false}],"regras_consistencia":[{"id":"ensaios_min_48","descricao":"Minimo 48 ensaios; maximo 128 (6 categorias x max tentativas)","tipo":"range_campo","min":48,"max":128},{"id":"categorias_le_6","descricao":"Maximo 6 categorias (cor, forma, numero, repetidos)","tipo":"range_campo","min":0,"max":6,"campo":"categorias"},{"id":"erros_le_ensaios","descricao":"Erros totais <= ensaios administrados","tipo":"comparacao_campo","campo_a":"erros","operador":"<=","campo_b":"ensaios"},{"id":"perseverativos_le_erros","descricao":"Erros perseverativos <= erros totais","tipo":"comparacao_campo","campo_a":"erros_perseverativos","operador":"<=","campo_b":"erros"},{"id":"soma_erros","descricao":"Erros perseverativos + nao perseverativos deve = erros totais","tipo":"formula_derivada","formula":"erros_perseverativos + erros_nao_perseverativos","referencia":"erros","tolerancia":0}],"calcula":{"%_perseverativos":"Erros perseverativos / Ensaios * 100","%_conceptual":"Respostas conceituais / Ensaios * 100","z_score":"Tabela Cianchetti (amostra italiana) por idade","classificacao":"Curva normal"}},"stroop":{"nome":"Teste de Stroop","faixa_etaria":{"min":84,"max":960,"unidade":"meses","label":"7 a 80 anos","_estimado":true},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Normas presentes (sem citacao explicita)","campos":[{"id":"t_palavra","label":"Cartela P (Palavras): tempo (segundos)","tipo":"numero","min":0,"max":600,"obrigatorio":true},{"id":"e_palavra","label":"Cartela P: erros","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"t_cor","label":"Cartela C (Cores): tempo (segundos)","tipo":"numero","min":0,"max":600,"obrigatorio":true},{"id":"e_cor","label":"Cartela C: erros","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"t_palavra_cor","label":"Cartela PC (Palavra-Cor): tempo (segundos)","tipo":"numero","min":0,"max":600,"obrigatorio":true},{"id":"e_palavra_cor","label":"Cartela PC: erros","tipo":"inteiro","min":0,"max":100,"obrigatorio":true}],"regras_consistencia":[{"id":"100_itens_cartela","descricao":"Cada cartela tem 100 itens; acertos = 100 - erros, deve ser >= 0","tipo":"maximo_por_campo","max":100,"campos":["e_palavra","e_cor","e_palavra_cor"]},{"id":"tempo_invertido","descricao":"Menor tempo = melhor desempenho; Z deve ser INVERTIDO antes de classificar (erro mais comum)","tipo":"inversao_sinal","campos":["t_palavra","t_cor","t_palavra_cor"]},{"id":"pc_gt_c_gt_p","descricao":"Espera-se PC > C > P em tempo (efeito Stroop)","tipo":"tendencia_esperada","alerta_nao_bloqueia":true}],"calcula":{"interferencia_stroop":"Formula Golden: (PC - (P x C)/(P + C)) - erro corrigido","z_score":"Tabela estratificada por idade e escolaridade (INVERTER sinal do tempo)","classificacao":"Curva normal"}},"trilhas":{"nome":"Teste de Trilhas (Trail Making Test A e B)","faixa_etaria":{"min":108,"max":1068,"unidade":"meses","label":"9 a 89 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Lima RF & Ciasca SM (Trilhas)","campos":[{"id":"t_a","label":"Trilha A - tempo (segundos)","tipo":"numero","min":0,"max":300,"obrigatorio":true},{"id":"e_a","label":"Trilha A - erros","tipo":"inteiro","min":0,"max":25,"obrigatorio":true},{"id":"t_b","label":"Trilha B - tempo (segundos)","tipo":"numero","min":0,"max":600,"obrigatorio":true},{"id":"e_b","label":"Trilha B - erros","tipo":"inteiro","min":0,"max":25,"obrigatorio":true}],"regras_consistencia":[{"id":"b_gt_a","descricao":"Trilha B (alternante) tipicamente 2x+ mais lenta que A. B < A sugere erro de registro.","tipo":"tendencia_esperada","alerta_nao_bloqueia":true},{"id":"tempo_invertido","descricao":"Menor tempo = melhor desempenho; Z deve ser INVERTIDO antes de classificar","tipo":"inversao_sinal","campos":["t_a","t_b"]},{"id":"razao_b_a","descricao":"Indice B/A = medida de alternancia/flexibilidade (tipicamente 1.5-2.5)","tipo":"formula_derivada","formula":"t_b / t_a"}],"calcula":{"z_score":"Tabela Lima & Ciasca estratificada por idade e escolaridade (Z do tempo INVERTIDO)","classificacao":"Sistema Wechsler"}},"tfv":{"nome":"Teste de Fluencia Verbal (TFV) - Fonologica e Semantica","faixa_etaria":{"min":60,"max":1068,"unidade":"meses","label":"5 a 89 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Seabra - Vol II Tabela 03 pag 135","campos":[{"id":"fonologica_letra","label":"Letra fonologica usada (ex: F, A, S, M)","tipo":"texto","obrigatorio":true},{"id":"fluencia_fonologica","label":"Fluencia Fonologica (palavras em 60s)","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"categoria_semantica","label":"Categoria semantica usada (ex: animais, frutas)","tipo":"texto","obrigatorio":false},{"id":"fluencia_semantica","label":"Fluencia Semantica (palavras em 60s)","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"tc_semantica","label":"Tempo de comutacao (TC, segundos)","tipo":"numero","min":0,"max":60,"obrigatorio":false}],"regras_consistencia":[{"id":"tempo_60s","descricao":"Cada prova tem 60 segundos fixos; valores muito altos (>60) sugerem erro","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"semantica_gt_fonologica","descricao":"Fluencia semantica costuma ser <= fonologica em adultos; inversao frequente em criancas pequenas","tipo":"tendencia_esperada","alerta_nao_bloqueia":true}],"calcula":{"z_score":"Tabela Seabra pag 135 estratificada por idade e escolaridade","classificacao":"Curva normal"}},"token":{"nome":"Token Test","faixa_etaria":{"min":60,"max":960,"unidade":"meses","label":"5 a 80 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Malloy-Diniz LF et al. (bateria de testes)","campos":[{"id":"parte1","label":"Parte 1 - comandos simples (max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"parte2","label":"Parte 2 - comandos com tamanho (max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"parte3","label":"Parte 3 - comandos com preposicoes (max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"parte4","label":"Parte 4 - comandos complexos (max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"parte5","label":"Parte 5 - comandos com condicao (max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":false}],"regras_consistencia":[{"id":"parte_max_10","descricao":"Cada parte limitada a 10 itens","tipo":"maximo_por_campo","max":10,"campos":["parte1","parte2","parte3","parte4","parte5"]},{"id":"total_max_50","descricao":"Soma das partes nao pode exceder 50 (5 partes x 10)","tipo":"soma_max","campos":["parte1","parte2","parte3","parte4","parte5"],"max":50}],"calcula":{"total_bruto":"Soma das partes (max 50)","z_score":"Tabela Malloy-Diniz estratificada por idade e escolaridade","classificacao":"Curva normal"}},"nomeacao":{"nome":"Teste de Nomeacao (Boston / similar)","faixa_etaria":{"min":216,"max":1068,"unidade":"meses","label":"18 a 89 anos","_estimado":true},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Normas presentes (sem citacao explicita)","campos":[{"id":"acertos_spontaneos","label":"Nomeacao espontanea (acertos)","tipo":"inteiro","min":0,"max":60,"obrigatorio":true},{"id":"acertos_pista","label":"Acertos apos pista fonologica","tipo":"inteiro","min":0,"max":60,"obrigatorio":false},{"id":"tempo_total","label":"Tempo total (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":false}],"regras_consistencia":[{"id":"total_max_60","descricao":"Total de itens nomeados nao pode exceder 60 (Boston Naming Test)","tipo":"soma_max","campos":["acertos_spontaneos","acertos_pista"],"max":60}],"calcula":{"total":"Acertos espontaneos + acertos apos pista","z_score":"Tabela estratificada por idade e escolaridade","classificacao":"Sistema Wechsler"}},"prolec":{"nome":"PROLEC - Avaliacao de Processos de Leitura","faixa_etaria":{"min":72,"max":156,"unidade":"meses","label":"6 a 13 anos"},"estratificacao_obrigatoria":["idade","serie_escolar"],"fonte_normativa":"PROLEC 3a ed. - Tabela 19","campos":[{"id":"vc","label":"VC - Equivalencia Visual (max 15)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"cvc","label":"CVC - Discriminacao de Letras (max 15)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true},{"id":"cvv","label":"CVV - Nome de Letras (max 30)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"ccvc","label":"CCVC - Omissao de Letras (max 30)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"cvvc","label":"CVVC - Acentuacao (max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"leitura_palavras","label":"Leitura de Palavras (acertos)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"leitura_pseudopalavras","label":"Leitura de Pseudopalavras (acertos)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"comp_texto","label":"Compreensao de Textos (acertos)","tipo":"inteiro","min":0,"max":15,"obrigatorio":true}],"regras_consistencia":[{"id":"acertos_le_max_subteste","descricao":"Acertos de cada subteste limitado pelo seu maximo (ex: CVV <= 30)","tipo":"maximo_por_campo","max_por_campo_map":{"vc":15,"cvc":15,"cvv":30,"ccvc":30,"cvvc":10}},{"id":"estratificacao_serie","descricao":"Tabela varia por serie escolar; sem serie, usar aproximacao por idade","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"pontos_brutos":"Soma dos subtestes","z_score":"Tabela 19 PROLEC por idade e serie","classificacao":"Guilmette"}},"figrey":{"nome":"Figura Complexa de Rey (RCFT)","faixa_etaria":{"min":72,"max":960,"unidade":"meses","label":"6 a 80 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Normas presentes (RCFT - sem citacao clara)","campos":[{"id":"copia","label":"Copia - Pontos (max 36)","tipo":"inteiro","min":0,"max":36,"obrigatorio":true},{"id":"tempo_copia","label":"Tempo de Copia (minutos)","tipo":"numero","min":0,"max":60,"obrigatorio":false},{"id":"evocacao_imediata","label":"Evocacao Imediata - Pontos (max 36)","tipo":"inteiro","min":0,"max":36,"obrigatorio":false},{"id":"evocacao_tardia","label":"Retencao/Evocacao Tardia - Pontos (max 36, apos 20-30min)","tipo":"inteiro","min":0,"max":36,"obrigatorio":true},{"id":"tempo_tardia","label":"Tempo de Evocacao Tardia (minutos)","tipo":"numero","min":0,"max":60,"obrigatorio":false}],"regras_consistencia":[{"id":"pontos_max_36","descricao":"Cada condicao limitada a 36 pontos (18 elementos x 2)","tipo":"maximo_por_campo","max":36,"campos":["copia","evocacao_imediata","evocacao_tardia"]},{"id":"copia_gt_tardia","descricao":"Espera-se Copia >= Evocacao. Evocacao > Copia sugere erro de registro ou aprendiz.","tipo":"tendencia_esperada","alerta_nao_bloqueia":true},{"id":"tempo_invertido","descricao":"Menor tempo de copia = melhor organizacao executiva; Z deve ser invertido","tipo":"inversao_sinal","campos":["tempo_copia"]}],"calcula":{"indice_retensao":"Evocacao tardia / Copia * 100","z_score":"Tabela estratificada por idade e escolaridade","classificacao":"Guilmette"}},"pfister":{"nome":"Teste das Piramides Coloridas de Pfister","faixa_etaria":{"min":72,"max":960,"unidade":"meses","label":"6 a 80 anos"},"estratificacao_obrigatoria":["idade"],"fonte_normativa":"Tabela Nova 2020 - adultos","campos":[{"id":"vm","label":"VM - Valor Metodo Vermelho","tipo":"inteiro","min":0,"max":50,"obrigatorio":true},{"id":"vd","label":"VD - Valor Metodo Diversificado","tipo":"inteiro","min":0,"max":50,"obrigatorio":true},{"id":"vi","label":"VI - Valor Indiferenciado","tipo":"inteiro","min":0,"max":50,"obrigatorio":true},{"id":"ci","label":"CI - Categorias Individuais","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"p75","label":"P75 - medida descritiva (75o percentil)","tipo":"numero","min":0,"max":50,"obrigatorio":false},{"id":"am2","label":"Amarelo-2 (categoria cromatica)","tipo":"inteiro","min":0,"max":50,"obrigatorio":false},{"id":"la2","label":"Laranja-2","tipo":"inteiro","min":0,"max":50,"obrigatorio":false},{"id":"az2","label":"Azul-2","tipo":"inteiro","min":0,"max":50,"obrigatorio":false},{"id":"total_pecas","label":"Total de pecas usadas (30)","tipo":"inteiro","min":30,"max":30,"obrigatorio":true}],"regras_consistencia":[{"id":"soma_categorias_vm_vd_vi","descricao":"VM + VD + VI deve somar 30 (total de pecas). Diferenca >2 alerta erro de contagem.","tipo":"soma_constante","campos":["vm","vd","vi"],"esperado":30,"tolerancia":2},{"id":"total_pecas_30","descricao":"Total de pecas do Pfister = 30 (fixo)","tipo":"igualdade_constante","campo":"total_pecas","esperado":30}],"calcula":{"z_score":"Tabela Nova 2020 estratificada por idade","classificacao":"Guilmette"}},"bfp":{"nome":"Bateria Fatorial de Personalidade (BFP) - 2a edicao","faixa_etaria":{"min":216,"max":960,"unidade":"meses","label":"18 a 80 anos"},"estratificacao_obrigatoria":["idade","sexo"],"fonte_normativa":"BFP Manual Aplicacao e Correcao - Nuernberg/Hutz/Bandeira/Schmidt. Casa do Psicologo","campos":[{"id":"itens_extroversao","label":"Itens Extroversao (Likert 1-7, 15 itens)","tipo":"lista_likert","escala_min":1,"escala_max":7,"num_itens":15,"obrigatorio":true},{"id":"itens_socializacao","label":"Itens Socializacao (Likert 1-7, 15 itens)","tipo":"lista_likert","escala_min":1,"escala_max":7,"num_itens":15,"obrigatorio":true},{"id":"itens_realizacao","label":"Itens Realizacao (Likert 1-7, 15 itens)","tipo":"lista_likert","escala_min":1,"escala_max":7,"num_itens":15,"obrigatorio":true},{"id":"itens_neuroticismo","label":"Itens Neuroticismo (Likert 1-7, 15 itens)","tipo":"lista_likert","escala_min":1,"escala_max":7,"num_itens":15,"obrigatorio":true},{"id":"itens_abertura","label":"Itens Abertura (Likert 1-7, 15 itens)","tipo":"lista_likert","escala_min":1,"escala_max":7,"num_itens":15,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_7","descricao":"Cada item entre 1 (nao concordo) e 7 (concordo plenamente). Fora disso bloqueia.","tipo":"range_likert","min":1,"max":7},{"id":"itens_reverso","descricao":"Itens redigidos negativamente (algumas em Extroversao, Socializacao) devem ser INVERTIDOS antes de somar","tipo":"inversao_itens_chave","alerta_nao_bloqueia":true},{"id":"soma_por_fator","descricao":"Soma dos 15 itens por fator; bruto maximo = 105 por fator","tipo":"soma_max","max":105,"por_fator":true}],"calcula":{"pontos_brutos_por_fator":"Soma dos 15 itens por fator (5 fatores = 75 itens)","pontos_ponderados":"Tabela BFP por sexo e idade (converte bruto em ponderado T)","percentil":"Tabela por fator, sexo e idade","classificacao":"Baixo (<=25), medio-baixo (26-40), medio (41-60), medio-alto (61-75), alto (>=76)"}},"cbcl":{"nome":"Child Behavior Checklist (CBCL)","faixa_etaria":{"min":18,"max":216,"unidade":"meses","label":"1.5 a 18 anos (CBCL 6-18; CBCL 1.5-5)"},"estratificacao_obrigatoria":["idade","sexo","informante"],"fonte_normativa":"ASEBA - APPENDIX B pag 102","campos":[{"id":"versao","label":"Versao aplicada","tipo":"select","opcoes":["CBCL 1.5-5","CBCL 6-18"],"obrigatorio":true},{"id":"atividade_esportes","label":"A) Numero de Esportes (competitivo)","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"atividade_nao_esportes","label":"A) Numero de atividades nao-esportivas","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"atividade_trabalhos","label":"A) Numero de trabalhos/tarefas","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"atividade_organizacoes","label":"A) Numero de organizacoes/clubes","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"esforco_satisfatorio","label":"Esforco satisfatorio (0-7)","tipo":"inteiro","min":0,"max":7,"obrigatorio":false},{"id":"comportamento_social","label":"Comportamento com outros (0-7)","tipo":"inteiro","min":0,"max":7,"obrigatorio":false},{"id":"desempenho_escolar","label":"Aprendizagem (desempenho escolar, 1-5 por materia)","tipo":"inteiro","min":1,"max":5,"obrigatorio":false},{"id":"itens_sindromes","label":"Itens das Sindromes (Likert 0-2, ~113 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":113,"obrigatorio":true},{"id":"itens_dsm","label":"Itens Orientados DSM (Likert 0-2)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":30,"obrigatorio":false}],"regras_consistencia":[{"id":"likert_0_2","descricao":"Cada item entre 0 (nao verdadeiro) e 2 (muito verdadeiro/frequentemente)","tipo":"range_likert","min":0,"max":2},{"id":"validade_interna","descricao":"Computar escala de Validade Interna (Outros Problemas, Respostas Opostas, etc); >6 inconsistencias invalida o protocolo","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"competencias_total","descricao":"Total de Competencias = soma das 3 escalas (atividades, social, escolar)","tipo":"formula_derivada","alerta_nao_bloqueia":true}],"calcula":{"escalas_sindromicas":"Ansiedade/Depressao, Isolamento/Depressao, Queixas Somaticas, Problemas Sociais, Problemas de Pensamento, Problemas de Atencao, Comportamento Transgressor, Comportamento Agressivo","escalas_dsm":"Problemas Afetivos, Ansiedade, Somaticos, TDAH, Oposicional-desafiador, Conduto","t_scores":"Tabela ASEBA por idade, sexo e versao. T >=65 (sindromes) ou >=67 (DSM) = faixa clinica","classificacao":"T 65-69 limiar, >=70 clinico (interno/externalizado); Competencias T <31 problema"}},"srs_2":{"nome":"Social Responsiveness Scale - 2 (SRS-2)","faixa_etaria":{"min":36,"max":228,"unidade":"meses","label":"2.5 a 18 anos (4 formas por faixa etaria)"},"estratificacao_obrigatoria":["idade","sexo","forma"],"fonte_normativa":"DSM-5 pag 11 (mapeamento para espectro autista)","campos":[{"id":"forma","label":"Forma aplicada","tipo":"select","opcoes":["Pre-escola (2.5-4.5)","Escolar (4-18)","Adolescente (12-18)","Adulto (19+)"],"obrigatorio":true},{"id":"itens_escala","label":"Itens da escala SRS-2 (Likert 1-4, 65 itens)","tipo":"lista_likert","escala_min":1,"escala_max":4,"num_itens":65,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_4","descricao":"Cada item entre 1 (Nunca verdadeiro) e 4 (Quase sempre verdadeiro)","tipo":"range_likert","min":1,"max":4},{"id":"total_min_max","descricao":"Soma minima = 65 (todos 1), maxima = 260 (todos 4); T-score derivado","tipo":"soma_constante_bounds","min_esperado":65,"max_esperado":260}],"calcula":{"subescalas":"Consciencia Social, Cognicao Social, Comunicacao, Motivacao Social, Padroes Restritos/Repetitivos","total_t_score":"Tabela por forma, sexo e idade. T >=66 moderado, >=76 grave","classificacao":"T <60 normal, 60-65 leve, 66-75 moderado, >=76 grave (espectro autista)"}},"snap_iv":{"nome":"SNAP-IV - Escala de Avaliacao de TDAH","faixa_etaria":{"min":72,"max":216,"unidade":"meses","label":"6 a 18 anos"},"estratificacao_obrigatoria":["idade","sexo","informante"],"fonte_normativa":"Mattos et al. 2006 (artigo SciELO)","campos":[{"id":"informante","label":"Informante","tipo":"select","opcoes":["Pais","Professores"],"obrigatorio":true},{"id":"itens_desatento","label":"Itens Desatencao (Likert 0-3, 9 itens DSM)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":9,"obrigatorio":true},{"id":"itens_hiperativo","label":"Itens Hiperatividade/Impulsividade (Likert 0-3, 9 itens DSM)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":9,"obrigatorio":true},{"id":"itens_desafiante","label":"Itens Oposicional-Desafiante (Likert 0-3, 8 itens)","tipo":"lista_likert","escala_min":0,"escala_max":3,"num_itens":8,"obrigatorio":false}],"regras_consistencia":[{"id":"likert_0_3","descricao":"Cada item entre 0 (Nada) e 3 (Muito)","tipo":"range_likert","min":0,"max":3},{"id":"score_medio","descricao":"Pontuacao media por subescala = soma / num_itens; corte clinico = 1.5 (desatencao/hiper) ou varia por informante","tipo":"formula_derivada","alerta_nao_bloqueia":true}],"calcula":{"media_desatento":"Soma itens desatencao / 9 (corte ~1.78 pais / 1.44 professores)","media_hiperativo":"Soma itens hiperatividade / 9","media_desafiante":"Soma itens TOD / 8","classificacao":"Percentil >=95 (acima da norma) sugere TDAH; interpretar com criterio clinico"}},"sdq_pr":{"nome":"Strengths and Difficulties Questionnaire (SDQ) - Versao Pais","faixa_etaria":{"min":48,"max":204,"unidade":"meses","label":"4 a 17 anos"},"estratificacao_obrigatoria":["idade","informante"],"fonte_normativa":"Fleitlich/Cury 2003 (sdqinfo.org)","campos":[{"id":"respondente","label":"Respondente","tipo":"select","opcoes":["Pais","Professores","Auto-relato (11-17)"],"obrigatorio":true},{"id":"itens_emocional","label":"Sintomas Emocionais (Likert 0-2, 5 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":5,"obrigatorio":true},{"id":"itens_conducta","label":"Problemas de Conduta (Likert 0-2, 5 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":5,"obrigatorio":true},{"id":"itens_hiperatividade","label":"Hiperatividade (Likert 0-2, 5 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":5,"obrigatorio":true},{"id":"itens_pares","label":"Problemas de Relacionamento com Pares (Likert 0-2, 5 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":5,"obrigatorio":true},{"id":"itens_prosocial","label":"Comportamento Prosocial (Likert 0-2, 5 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":5,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_0_2","descricao":"Cada item entre 0 (Nao verdade) e 2 (Certamente verdade)","tipo":"range_likert","min":0,"max":2},{"id":"prosocial_reverso","descricao":"Itens Prosocial sao INVERTIDOS antes de somar (prosocial alto = bom)","tipo":"inversao_itens_chave","alerta_nao_bloqueia":true},{"id":"total_dificuldades","descricao":"Total = Emocional + Conduta + Hiperatividade + Pares (NAO inclui Prosocial); max 40","tipo":"formula_max","formula":"Emocional + Conduta + Hiperatividade + Pares","max":40}],"calcula":{"total_dificuldades":"Soma das 4 escalas de dificuldades (sem prosocial). >=17 clinico, 14-16 limiar, <=13 normal","classificacao":"Por subescala: ~>=5-6 clinico (varia por escala)"}},"scared":{"nome":"Screen for Child Anxiety Related Disorders (SCARED)","faixa_etaria":{"min":96,"max":216,"unidade":"meses","label":"8 a 18 anos"},"estratificacao_obrigatoria":["idade","informante"],"fonte_normativa":"Isolan 2011 (validacao BR)","campos":[{"id":"informante","label":"Informante","tipo":"select","opcoes":["Pais","Criado/Auto-relato"],"obrigatorio":true},{"id":"itens_panicar","label":"Panico/Significativos Somaticos (Likert 0-2, 13 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":13,"obrigatorio":true},{"id":"itens_ansiedade_separacao","label":"Ansiedade de Separacao (Likert 0-2, 8 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":8,"obrigatorio":true},{"id":"itens_ansiedade_social","label":"Ansiedade Social (Likert 0-2, 7 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":7,"obrigatorio":true},{"id":"itens_ansiedade_escola","label":"Ansiedade Escolar/Fobica (Likert 0-2, 4 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":4,"obrigatorio":true},{"id":"itens_ansiedade_generalizada","label":"Ansiedade Generalizada (Likert 0-2, 9 itens)","tipo":"lista_likert","escala_min":0,"escala_max":2,"num_itens":9,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_0_2","descricao":"Cada item entre 0 (Quase nunca) e 2 (Quase sempre)","tipo":"range_likert","min":0,"max":2},{"id":"total_max_82","descricao":"Soma total = 41 itens x max 2 = 82. Total >82 = erro de registro","tipo":"soma_max","max":82}],"calcula":{"total_geral":"Soma dos 41 itens (corte >=25 sugere transtorno de ansiedade)","por_subescala":"Cortes especificos: Panico>=7, Separacao>=5, Social>=5, Escola>=3, Generalizada>=7","classificacao":"Total >=25 = positivo para transtorno de ansiedade (Isolan 2011)"}},"etdah_2":{"nome":"Escala para Triagem do TDAH na Escola - ETDAH-2","faixa_etaria":{"min":72,"max":216,"unidade":"meses","label":"6 a 18 anos"},"estratificacao_obrigatoria":["idade","sexo","tipo_escola"],"fonte_normativa":"ETDAH-2 - Tab 2.11 pag 63","campos":[{"id":"tipo_escola","label":"Tipo de Escola","tipo":"select","opcoes":["Publica","Particular"],"obrigatorio":true},{"id":"informante","label":"Informante","tipo":"select","opcoes":["Professor","Pais","Auto"],"obrigatorio":true},{"id":"itens_atencao","label":"Fator Atencao (Likert 1-5, 9 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":9,"obrigatorio":true},{"id":"itens_hiperatividade","label":"Fator Hiperatividade/Impulsividade (Likert 1-5, 9 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":9,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_5","descricao":"Cada item entre 1 (Discordo Totalmente) e 5 (Concordo Totalmente)","tipo":"range_likert","min":1,"max":5}],"calcula":{"escores_por_fator":"Soma / media por fator (Atencao, Hiperatividade/Impulsividade)","percentil":"Tabela 2.11 pag 63 por idade, sexo e tipo de escola","classificacao":"Percentil >=90 (ou >=95) = risco elevado para TDAH"}},"etdah_criad":{"nome":"ETDAH - Auto-relato para Crianca/Adolescente","faixa_etaria":{"min":96,"max":216,"unidade":"meses","label":"8 a 18 anos"},"estratificacao_obrigatoria":["idade","sexo"],"fonte_normativa":"Tabela 19 - amostra geral","campos":[{"id":"itens_fator1_hiperatividade","label":"FATOR 1 - HIPERATIVIDADE (Likert 1-5)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_fator2_atencao","label":"FATOR 2 - ATENCAO (Likert 1-5)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_5","descricao":"Cada item entre 1 (Discordo Totalmente) e 5 (Concordo Totalmente)","tipo":"range_likert","min":1,"max":5}],"calcula":{"soma_por_fator":"Soma de cada fator","percentil":"Tabela 19 amostra geral por idade","classificacao":">=85 Superior (probabilidade TDAH); Guilmette"}},"etdah_pais":{"nome":"ETDAH - Versao para Pais","faixa_etaria":{"min":72,"max":216,"unidade":"meses","label":"6 a 18 anos"},"estratificacao_obrigatoria":["idade","sexo"],"fonte_normativa":"Normas presentes (sem citacao explicita)","campos":[{"id":"itens_fator1_reg_emocional","label":"FATOR 1 - REGULACAO EMOCIONAL (Likert 1-5, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_fator2_inat_hiper","label":"FATOR 2 - INATENCAO/HIPERATIVIDADE (Likert 1-5, 9 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":9,"obrigatorio":true},{"id":"itens_fator3_comport_adaptativo","label":"FATOR 3 - COMPORTAMENTO ADAPTATIVO (Likert 1-5, 8 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":8,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_5","descricao":"Cada item entre 1 (Discordo Totalmente) e 5 (Concordo Totalmente)","tipo":"range_likert","min":1,"max":5}],"calcula":{"soma_por_fator":"Soma dos 3 fatores","z_score":"Tabela por idade e sexo","classificacao":"Guilmette"}},"etdah_ad":{"nome":"ETDAH - Versao para Adultos","faixa_etaria":{"min":216,"max":720,"unidade":"meses","label":"18 a 60 anos","_estimado":true},"estratificacao_obrigatoria":["idade","sexo"],"fonte_normativa":"Normas presentes (sem citacao explicita)","campos":[{"id":"itens_desatencao","label":"Fator Desatencao (Likert 1-5, 9 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":9,"obrigatorio":true},{"id":"itens_hiperatividade","label":"Fator Hiperatividade/Impulsividade (Likert 1-5, 9 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":9,"obrigatorio":true},{"id":"itens_emocional","label":"Fator Emotional (Likert 1-5, 5 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":5,"obrigatorio":false}],"regras_consistencia":[{"id":"likert_1_5","descricao":"Cada item entre 1 (Discordo Totalmente) e 5 (Concordo Totalmente)","tipo":"range_likert","min":1,"max":5}],"calcula":{"soma_por_fator":"Soma por fator","z_score":"Tabela por idade e sexo","classificacao":"Guilmette"}},"tde2":{"nome":"Teste de Desempenho Escolar - 2a edicao (TDE-II)","faixa_etaria":{"min":72,"max":192,"unidade":"meses","label":"6 a 16 anos"},"estratificacao_obrigatoria":["idade","serie_escolar"],"fonte_normativa":"Normas presentes (114k celulas) - sem citacao explicita","campos":[{"id":"acertos_escrita","label":"Acertos - Escrita","tipo":"inteiro","min":0,"max":34,"obrigatorio":true},{"id":"acertos_aritmetica","label":"Acertos - Aritmetica","tipo":"inteiro","min":0,"max":38,"obrigatorio":true},{"id":"acertos_leitura","label":"Acertos - Leitura","tipo":"inteiro","min":0,"max":70,"obrigatorio":true},{"id":"acertos_total","label":"Acertos - Total","tipo":"inteiro","min":0,"max":142,"obrigatorio":true}],"regras_consistencia":[{"id":"soma_subtestes","descricao":"Acertos total deve = escrita + aritmetica + leitura","tipo":"formula_derivada","formula":"acertos_escrita + acertos_aritmetica + acertos_leitura","referencia":"acertos_total","tolerancia":0},{"id":"maximos_subtestes","descricao":"Escrita max 34, Aritmetica max 38, Leitura max 70","tipo":"maximo_por_campo","max_por_campo_map":{"acertos_escrita":34,"acertos_aritmetica":38,"acertos_leitura":70}}],"calcula":{"pontos_padronizados":"Tabela por idade e serie escolar (114k celulas)","z_score":"Estratificado por serie","classificacao":"Por subteste: normal / risco / deficit"}},"thcp":{"nome":"Teste de Habilidades de Consciencia Pre-alfabetica (THCP)","faixa_etaria":{"min":48,"max":84,"unidade":"meses","label":"4 a 7 anos"},"estratificacao_obrigatoria":["idade"],"fonte_normativa":"THCP Manual de Aplicacao - Vetor/Giunti Psychometrics","campos":[{"id":"subescala1_formas","label":"Subescala 1 - Reconhecimento de Formas (quadrado, triangulo)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"subescala2_letras","label":"Subescala 2 - Reconhecimento de Letras (A, B, G)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"subescala3_numeros","label":"Subescala 3 - Reconhecimento de Numeros (7, 2)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"subescala4_figura_complexa","label":"Subescala 4 - Copia de Figura Complexa (quadrado, circulo, posicao, proporcao)","tipo":"inteiro","min":0,"max":8,"obrigatorio":true},{"id":"subescala5_outros","label":"Subescala 5 - Outras habilidades pre-alfabeticas","tipo":"inteiro","min":0,"max":10,"obrigatorio":true}],"regras_consistencia":[{"id":"idade_pre_alfabetica","descricao":"Paciente deve ter 4-7 anos (48-84 meses). Fora disso o teste nao se aplica.","tipo":"range_idade"},{"id":"maximos_subescalas","descricao":"Cada subescala limitada pelo seu maximo","tipo":"maximo_por_campo","max_por_campo_map":{"subescala1_formas":10,"subescala2_letras":10,"subescala3_numeros":10,"subescala4_figura_complexa":8,"subescala5_outros":10}}],"calcula":{"pontos_brutos":"Soma das 5 subescalas","quartil":"Classificacao por quartil (Q1-Q4) por idade","classificacao":"Por quartil e idade"}},"nepsy_2":{"nome":"NEPSY-II","faixa_etaria":{"min":36,"max":204,"unidade":"meses","label":"3 a 16 anos"},"estratificacao_obrigatoria":["idade_meses","sexo"],"fonte_normativa":"NEPSY-2 Manual Clinico pag 135 Tab 6.2","campos":[{"id":"preensao_madura","label":"Tipo de Preensao - Madura (0-12)","tipo":"inteiro","min":0,"max":12,"obrigatorio":true},{"id":"preensao_intermediaria","label":"Tipo de Preensao - Intermediaria (0-12)","tipo":"inteiro","min":0,"max":12,"obrigatorio":false},{"id":"preensao_imatura","label":"Tipo de Preensao - Imatura (0-12)","tipo":"inteiro","min":0,"max":12,"obrigatorio":false},{"id":"preensao_variavel","label":"Tipo de Preensao - Variavel (0-12)","tipo":"inteiro","min":0,"max":12,"obrigatorio":false},{"id":"repeticao_palavras","label":"Lista de Palavras - Repeticao (escore total)","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"recordacao_palavras","label":"Lista de Palavras - Recordacao (escore total)","tipo":"inteiro","min":0,"max":28,"obrigatorio":false},{"id":"mem_narrativa_livre","label":"Memoria Narrativa - Recordacao Livre (total)","tipo":"inteiro","min":0,"max":25,"obrigatorio":false},{"id":"mem_narrativa_pista","label":"Memoria Narrativa - Livre & Pista (total)","tipo":"inteiro","min":0,"max":30,"obrigatorio":false},{"id":"mem_narrativa_reconhecimento","label":"Memoria Narrativa - Reconhecimento (total)","tipo":"inteiro","min":0,"max":15,"obrigatorio":false},{"id":"mem_desenhos","label":"Memoria para Desenhos - escore total","tipo":"inteiro","min":0,"max":20,"obrigatorio":false}],"regras_consistencia":[{"id":"preensao_soma","descricao":"Tipos de preensao (madura+intermediaria+imatura+variavel) devem refletir os itens avaliados; nao pode exceder total","tipo":"alerta_clinico","alerta_nao_bloqueia":true},{"id":"subtestes_minimos","descricao":"NEPSY-II tem bateria flexivel: pelo menos 1 subteste preenchido por dominio avaliado","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"pontos_ponderados":"Manual Clinico Tab 6.2 por idade em meses","equivalente_percentil":"Conversao do escore ponderado para percentil","classificacao":"Sistema Guilmette (<=5 def, 6-10 inf, 11-25 m-inf, 26-75 medio, etc.)"}},"neupsilin_inf":{"nome":"Neupsilin Infantil (Neupsilin-Inf)","faixa_etaria":{"min":72,"max":192,"unidade":"meses","label":"6 a 16 anos","_estimado":true},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Normas presentes (sem citacao explicita)","campos":[{"id":"orientacao","label":"Orientacao (escore, max 10)","tipo":"inteiro","min":0,"max":10,"obrigatorio":true},{"id":"atencao_tempo_execucao","label":"Atencao - Tempo de Execucao (segundos)","tipo":"numero","min":0,"max":999,"obrigatorio":true},{"id":"atencao_acertos","label":"Atencao - Acertos","tipo":"inteiro","min":0,"max":100,"obrigatorio":true},{"id":"percepcao_faces","label":"Percepcao - Emocoes em Faces","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"percepcao_constancia","label":"Percepcao - Constancia de Forma e Objetos","tipo":"inteiro","min":0,"max":20,"obrigatorio":false},{"id":"mem_trab_o_maior_seq","label":"Memoria de Trabalho - Maior sequencia (O.I.)","tipo":"inteiro","min":0,"max":9,"obrigatorio":true},{"id":"mem_trab_span_pseudo","label":"Memoria de Trabalho - Span de Pseudopalavras","tipo":"inteiro","min":0,"max":9,"obrigatorio":false},{"id":"mem_trab_pseudo_maior_seq","label":"Memoria de Trabalho - Maior sequencia Pseudopalavras","tipo":"inteiro","min":0,"max":9,"obrigatorio":false},{"id":"mem_visuoesp_inv","label":"Memoria Visuoespacial (ordem inversa)","tipo":"inteiro","min":0,"max":9,"obrigatorio":false}],"regras_consistencia":[{"id":"spans_le_9","descricao":"Spans de memoria tipicamente 3-7; >8 ou <2 = alerta","tipo":"alerta_clinico","alerta_nao_bloqueia":true,"min_esperado":2,"max_esperado":8,"campos":["mem_trab_o_maior_seq","mem_trab_span_pseudo","mem_trab_pseudo_maior_seq","mem_visuoesp_inv"]},{"id":"tempo_atencao_invertido","descricao":"Tempo de atencao = menor melhor; Z invertido","tipo":"inversao_sinal","campos":["atencao_tempo_execucao"]}],"calcula":{"escores_padronizados":"Tabela por idade e escolaridade","classificacao":"Manual Neupsilin-Inf e sistema Guilmette"}},"prova_aritmetica":{"nome":"Prova de Aritmetica","faixa_etaria":{"min":72,"max":192,"unidade":"meses","label":"6 a 16 anos","_estimado":true},"estratificacao_obrigatoria":["idade","serie_escolar"],"fonte_normativa":"Normas presentes (sem citacao explicita)","campos":[{"id":"acertos","label":"Acertos (cada item = 1 ponto certo, 0 errado)","tipo":"inteiro","min":0,"max":40,"obrigatorio":true},{"id":"tempo_total","label":"Tempo total (segundos)","tipo":"numero","min":0,"max":1800,"obrigatorio":false}],"regras_consistencia":[{"id":"acertos_max","descricao":"Acertos limitado ao numero de itens da prova (estimado 30-40)","tipo":"maximo_por_campo","max":40,"campo":"acertos"},{"id":"idade_no_range","descricao":"Aplicavel a 6-16 anos; itens variam por serie","tipo":"range_idade"}],"calcula":{"pontuacao_padrao":"Tabela estratificada por idade e serie escolar","z_score":"Conversao por serie","percentil":"Derivado do Z"}},"qedp":{"nome":"Questionario de Estilos e Dinamica Parental (QEDP)","faixa_etaria":{"min":216,"max":720,"unidade":"meses","label":"18 a 60 anos (pais/respondentes)","_estimado":true},"estratificacao_obrigatoria":["idade_filho","informante"],"fonte_normativa":"Jonas Jardim Paula / Labep Neuro","campos":[{"id":"informante","label":"Informante","tipo":"select","opcoes":["Mae","Pai","Cuidador"],"obrigatorio":true},{"id":"itens_mimo","label":"Estilo Mima/Permissivo (Likert, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_negligencia","label":"Estilo Negligente (Likert, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_autoritario","label":"Estilo Autoritario (Likert, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_autoritativo","label":"Estilo Autoritativo/Positivo (Likert, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_5","descricao":"Cada item entre 1 (Discorda Totalmente) e 5 (Concorda Totalmente)","tipo":"range_likert","min":1,"max":5},{"id":"soma_por_estilo","descricao":"Soma dos itens por estilo parental (4 estilos)","tipo":"soma_max","por_grupo":true,"max":50}],"calcula":{"escores_por_estilo":"Soma de cada estilo parental","percentil":"Labep Neuro por idade do filho e informante","classificacao":"Estilo predominante = maior score; clasificacao por percentil"}},"iep":{"nome":"Inventario de Estilos Parentais (IEP)","faixa_etaria":{"min":216,"max":720,"unidade":"meses","label":"18 a 60 anos (pais/respondentes)","_estimado":true},"estratificacao_obrigatoria":["informante"],"fonte_normativa":"Normas maternas/paternas documentadas (Weber)","campos":[{"id":"informante","label":"Informante","tipo":"select","opcoes":["Mae","Pai"],"obrigatorio":true},{"id":"itens_monitoria_positiva","label":"Monitoria Positiva (Likert 1-5, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_comportamento_moral","label":"Comportamento Moral (Likert 1-5, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_punicao_inconsistente","label":"Punicao Inconsistente (Likert 1-5, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_negligencia","label":"Negligencia (Likert 1-5, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true},{"id":"itens_abuso_fisico","label":"Abuso Fisico (Likert 1-5, 10 itens)","tipo":"lista_likert","escala_min":1,"escala_max":5,"num_itens":10,"obrigatorio":true}],"regras_consistencia":[{"id":"likert_1_5","descricao":"Cada item entre 1 e 5","tipo":"range_likert","min":1,"max":5},{"id":"praticas_positivas_vs_negativas","descricao":"Monitoria Positiva + Comportamento Moral = Praticas Positivas; Punicao + Negligencia + Abuso = Praticas Negativas","tipo":"formula_derivada","alerta_nao_bloqueia":true}],"calcula":{"estilo_parental":"Combinacao das 2 praticas (positiva + negativa) -> Estilo: Autoritario / Autoritativo / Permissivo / Negligente","percentil":"Tabela por informante (mae/pai)","classificacao":"Estilo parental resultante + intensidade"}},"bams":{"nome":"Bateria de Avaliacao da Memoria Semantica (BAMS)","faixa_etaria":{"min":216,"max":960,"unidade":"meses","label":"18 a 80 anos","_estimado":true},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Manual Vetor (sem citacao explicita)","campos":[{"id":"categoria_profissao","label":"Subteste Profissao (acertos)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"categoria_alimentos","label":"Subteste Alimentos (acertos)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true},{"id":"categoria_outros","label":"Subteste Outros (acertos)","tipo":"inteiro","min":0,"max":30,"obrigatorio":false},{"id":"total_profissao","label":"Total Profissao (soma bruta)","tipo":"inteiro","min":0,"max":30,"obrigatorio":true}],"regras_consistencia":[{"id":"acertos_le_max","descricao":"Acertos de cada subteste limitado pelo seu maximo","tipo":"maximo_por_campo","max_por_campo_map":{"categoria_profissao":30,"categoria_alimentos":30,"categoria_outros":30}},{"id":"escolaridade_obrigatoria","descricao":"Normas BAMS variam por escolaridade (analfabeto a pos-grad)","tipo":"alerta_clinico","alerta_nao_bloqueia":true}],"calcula":{"pontos_brutos":"Soma dos subtestes","z_score":"Tabela por idade e escolaridade (inclui analfabeto)","classificacao":"Guilmette"}},"corsi":{"nome":"Bloco de Corsi (Span Visuoespacial)","faixa_etaria":{"min":60,"max":1104,"unidade":"meses","label":"5 a 92 anos"},"estratificacao_obrigatoria":["idade","escolaridade"],"fonte_normativa":"Dias & Mecca - Avaliacao Neuropsicologica Cognitiva Memoria","campos":[{"id":"span_sequencia","label":"Span de Sequencia (ordem direta)","tipo":"inteiro","min":0,"max":9,"obrigatorio":true},{"id":"span_inverso","label":"Span Inverso (ordem inversa)","tipo":"inteiro","min":0,"max":9,"obrigatorio":true},{"id":"pontos_brutos","label":"Pontuacao bruta total","tipo":"inteiro","min":0,"max":77,"obrigatorio":false}],"regras_consistencia":[{"id":"span_le_9","descricao":"Span tipicamente 4-6; valores >8 ou <2 sao atipicos (alerta)","tipo":"alerta_clinico","alerta_nao_bloqueia":true,"min_esperado":2,"max_esperado":8},{"id":"inverso_le_direto","descricao":"Span inverso costuma ser <= span direto (diferenca de 1 ponto esperada). Inverso > direto sugere erro.","tipo":"tendencia_esperada","alerta_nao_bloqueia":true}],"calcula":{"z_score":"Tabela Dias & Mecca estratificada por escolaridade (Analfabeto/Fund1/Fund2/Medio/Superior/Pos-grad)","classificacao":"Sistema Guilmette"}}};
+
+/* ---------------------------------------------------------------------------
+   NORM: constantes normativas por schemaId, derivadas das funções calcular
+   originais do protótipo. media é função(ctx)=>número; dp, maiorMelhor,
+   escala e brutoDesc são fixos. Usado pela calculadora genérica (schemaPath).
+   --------------------------------------------------------------------------- */
+const NORM = {
+  "wisc_iv":{media:ctx=>(40+ESC_DELTA_Z[ctx.escolaridade]*6),dp:6,maiorMelhor:true,escala:"QI",brutoDesc:"Σ escores ponderados"},
+  "wais_iii":{media:ctx=>(40+ESC_DELTA_Z[ctx.escolaridade]*6),dp:6,maiorMelhor:true,escala:"QI",brutoDesc:"Σ escores ponderados"},
+  "wasi":{media:ctx=>(20+ESC_DELTA_Z[ctx.escolaridade]*3),dp:4,maiorMelhor:true,escala:"QI",brutoDesc:"Σ subtestes"},
+  "ravlt":{media:ctx=>(48+ESC_DELTA_Z[ctx.escolaridade]*10+idadeDeltaZ(ctx.idade)*10),dp:10,maiorMelhor:true,escala:"T",brutoDesc:"Evocação total A1–A5"},
+  "hvlt_r":{media:ctx=>(24+ESC_DELTA_Z[ctx.escolaridade]*4+idadeDeltaZ(ctx.idade)*5),dp:5,maiorMelhor:true,escala:"T",brutoDesc:"Total de aprendizagem"},
+  "bvmt_r":{media:ctx=>(21+ESC_DELTA_Z[ctx.escolaridade]*4+idadeDeltaZ(ctx.idade)*5),dp:5,maiorMelhor:true,escala:"T",brutoDesc:"Total dos 3 ensaios"},
+  "7fig_7pal":{media:ctx=>(11+ESC_DELTA_Z[ctx.escolaridade]*2),dp:2.4,maiorMelhor:true,escala:"Z",brutoDesc:"Σ trials"},
+  "bams":{media:ctx=>(40+ESC_DELTA_Z[ctx.escolaridade]*8),dp:8,maiorMelhor:true,escala:"Z",brutoDesc:"Total"},
+  "corsi":{media:ctx=>(5+ESC_DELTA_Z[ctx.escolaridade]*0.6),dp:1,maiorMelhor:true,escala:"Z",brutoDesc:"Span"},
+  "figrey":{media:ctx=>(32+ESC_DELTA_Z[ctx.escolaridade]*1.2+idadeDeltaZ(ctx.idade)*1.5),dp:4.5,maiorMelhor:true,escala:"Z",brutoDesc:"Cópia"},
+  "ac":{media:ctx=>(52+ESC_DELTA_Z[ctx.escolaridade]*12),dp:12,maiorMelhor:true,escala:"PCT",brutoDesc:"Pontos (A−E−O)"},
+  "ac_15":{media:ctx=>(10+ESC_DELTA_Z[ctx.escolaridade]*2),dp:2.5,maiorMelhor:true,escala:"Z",brutoDesc:"Acertos líquidos"},
+  "bpa":{media:ctx=>(65+ESC_DELTA_Z[ctx.escolaridade]*12),dp:12,maiorMelhor:true,escala:"Z",brutoDesc:"Atenção sustentada"},
+  "d2_r":{media:ctx=>(350+ESC_DELTA_Z[ctx.escolaridade]*80),dp:80,maiorMelhor:true,escala:"PCT",brutoDesc:"TN (acertos líquidos)"},
+  "stroop":{media:ctx=>(240+ESC_DELTA_Z[ctx.escolaridade]*45+idadeDeltaZ(ctx.idade)*30),dp:45,maiorMelhor:true,escala:"Z",brutoDesc:"Σ P+C+PC"},
+  "trilhas":{media:ctx=>(30+idadeAdj-ESC_DELTA_Z[ctx.escolaridade]*4),dp:12,maiorMelhor:false,escala:"Z",brutoDesc:"Tempo TMT-A"},
+  "fdt":{media:ctx=>(30+ESC_DELTA_Z[ctx.escolaridade]*8),dp:8,maiorMelhor:true,escala:"Z",brutoDesc:"Fluência"},
+  "hayling":{media:ctx=>(6+ESC_DELTA_Z[ctx.escolaridade]*1.5),dp:2,maiorMelhor:false,escala:"Z",brutoDesc:"Σ erros"},
+  "go_no_go":{media:ctx=>(8),dp:4,maiorMelhor:false,escala:"Z",brutoDesc:"Σ erros"},
+  "tol":{media:ctx=>(45-ESC_DELTA_Z[ctx.escolaridade]*6),dp:10,maiorMelhor:false,escala:"Z",brutoDesc:"Movimentos"},
+  "wsct48":{media:ctx=>(12),dp:6,maiorMelhor:false,escala:"Z",brutoDesc:"Erros de persistência"},
+  "brief_2":{media:ctx=>(50),dp:10,maiorMelhor:false,escala:"T",brutoDesc:"GEC (T)"},
+  "brief_p":{media:ctx=>(50),dp:10,maiorMelhor:false,escala:"T",brutoDesc:"GEC (T)"},
+  "bdefs":{media:ctx=>(50),dp:25,maiorMelhor:false,escala:"PCT",brutoDesc:"Percentil total"},
+  "tfv":{media:ctx=>(18+ESC_DELTA_Z[ctx.escolaridade]*5),dp:5,maiorMelhor:true,escala:"Z",brutoDesc:"Fluência semântica"},
+  "token":{media:ctx=>(55+ESC_DELTA_Z[ctx.escolaridade]*3),dp:5,maiorMelhor:true,escala:"Z",brutoDesc:"Acertos"},
+  "nomeacao":{media:ctx=>(52+ESC_DELTA_Z[ctx.escolaridade]*4),dp:5,maiorMelhor:true,escala:"Z",brutoDesc:"Acertos"},
+  "prolec":{media:ctx=>(70+ESC_DELTA_Z[ctx.escolaridade]*15),dp:15,maiorMelhor:true,escala:"PCT",brutoDesc:"Total"},
+  "bfp":{media:ctx=>(60),dp:12,maiorMelhor:true,escala:"PCT",brutoDesc:"Média das dimensões"},
+  "pfister":{media:ctx=>(5),dp:3,maiorMelhor:true,escala:"Z",brutoDesc:"VM (predomínio)"},
+  "etdah_2":{media:ctx=>(16),dp:8,maiorMelhor:false,escala:"PCT",brutoDesc:"Σ desatenção + hiperatividade"},
+  "etdah_pais":{media:ctx=>(16),dp:8,maiorMelhor:false,escala:"PCT",brutoDesc:"Total"},
+  "etdah_ad":{media:ctx=>(14),dp:8,maiorMelhor:false,escala:"PCT",brutoDesc:"Total"},
+  "etdah_criad":{media:ctx=>(15),dp:8,maiorMelhor:false,escala:"PCT",brutoDesc:"Total"},
+  "snap_iv":{media:ctx=>(4),dp:2.5,maiorMelhor:false,escala:"PCT",brutoDesc:"Σ itens"},
+  "cbcl":{media:ctx=>(50),dp:10,maiorMelhor:false,escala:"T",brutoDesc:"Internalizante (T)"},
+  "scared":{media:ctx=>(12),dp:8,maiorMelhor:false,escala:"PCT",brutoDesc:"Total"},
+  "sdq_pr":{media:ctx=>(10),dp:6,maiorMelhor:false,escala:"PCT",brutoDesc:"Dificuldades totais"},
+  "srs_2":{media:ctx=>(50),dp:10,maiorMelhor:false,escala:"T",brutoDesc:"T total"},
+  "iep":{media:ctx=>(50),dp:15,maiorMelhor:true,escala:"PCT",brutoDesc:"Prática positiva"},
+  "qedp":{media:ctx=>(50),dp:15,maiorMelhor:true,escala:"PCT",brutoDesc:"Total"},
+  "nepsy_2":{media:ctx=>(10),dp:3,maiorMelhor:true,escala:"PCT",brutoDesc:"Atenção (escala)"},
+  "neupsilin_inf":{media:ctx=>(50),dp:10,maiorMelhor:true,escala:"Z",brutoDesc:"Composto"},
+  "ped_vr":{media:ctx=>(60),dp:15,maiorMelhor:true,escala:"PCT",brutoDesc:"Total"},
+  "thcp":{media:ctx=>(60),dp:15,maiorMelhor:true,escala:"Z",brutoDesc:"Total"},
+  "tde2":{media:ctx=>(90+ESC_DELTA_Z[ctx.escolaridade]*15),dp:20,maiorMelhor:true,escala:"PCT",brutoDesc:"Total"},
+  "prova_aritmetica":{media:ctx=>(25),dp:8,maiorMelhor:true,escala:"PCT",brutoDesc:"Acertos"},
+};
+
+/* ---------------------------------------------------------------------------
+   MAPA schemaId -> testId do protótipo (para herdar categoria/icone/fonte/
+   faixa_etaria exibidos). Testes sem schema (vineland, pepr) usam o caminho
+   original e não aparecem aqui.
+   --------------------------------------------------------------------------- */
+const SCHEMA_TO_TEST = {
+  wisc_iv:"wisc_iv", wais_iii:"wais_iii", wasi:"wasi", ravlt:"ravlt",
+  hvlt_r:"hvlt", bvmt_r:"bvmt", "7fig_7pal":"fig7pal", bams:"bams", corsi:"corsi",
+  figrey:"figrey", ac:"ac", ac_15:"ac15", bpa:"bpa", d2_r:"d2r", stroop:"stroop",
+  trilhas:"trilhas", fdt:"fdt", hayling:"hayling", go_no_go:"gonogo", tol:"tol",
+  wsct48:"wsct48", brief_2:"brief2", brief_p:"briefp", bdefs:"bdefs", tfv:"tfv",
+  token:"token", nomeacao:"nomeacao", prolec:"prolec", bfp:"bfp", pfister:"pfister",
+  etdah_2:"etdah2", etdah_pais:"etdah_pais", etdah_ad:"etdah_ad", etdah_criad:"etdah_criad",
+  snap_iv:"snap", cbcl:"cbcl", scared:"scared", sdq_pr:"sdq", srs_2:"srs2", iep:"iep",
+  qedp:"qedp", nepsy_2:"nepsy2", neupsilin_inf:"neupsilin_inf", ped_vr:"pedvr",
+  thcp:"thcp", tde2:"tde2", prova_aritmetica:"prova_arit"
+};
+
+/* Testes do protótipo que NÃO têm schema → mantêm fluxo original. */
+const TESTES_SEM_SCHEMA = new Set(["vineland","pepr"]);
 const TESTES = [
 
 /* ===================== INTELIGÊNCIA ===================== */
@@ -550,17 +666,28 @@ const TESTES = [
   fonte:"Tabela A8.1 (Br); Flanagan & Kaufman 2009", faixa_etaria:"6-16 anos",
   estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
   campos:[
-    {id:"cv",label:"Compreensão Verbal (ICV)",ph:"1–19"},
-    {id:"rp",label:"Raciocínio Perceptivo (IRP)",ph:"1–19"},
-    {id:"mo",label:"Memória Operacional (IMO)",ph:"1–19"},
-    {id:"vo",label:"Velocidade de Process. (IVP)",ph:"1–19"}
+    {id:"cb",label:"CB — Cubos",ph:"0–68",ref:"E10"},
+    {id:"sm",label:"SM — Semelhanças",ph:"0–32",ref:"E11"},
+    {id:"vc",label:"VC — Vocabulário",ph:"0–68",ref:"E12"},
+    {id:"cn",label:"CN — Cancelamento",ph:"0–62",ref:"E13"},
+    {id:"co",label:"CO — Conhecimentos",ph:"0–34",ref:"E14"},
+    {id:"dg",label:"DG — Dígitos",ph:"0–48",ref:"E16"},
+    {id:"in",label:"IN — Informação",ph:"0–32",ref:"E17"},
+    {id:"cd",label:"CD — Códigos",ph:"0–119",ref:"E18"},
+    {id:"rp",label:"RP — Raciocínio Matricial",ph:"0–35",ref:"E19"},
+    {id:"ar",label:"AR — Aritmética",ph:"0–34",ref:"E20"},
+    {id:"snl",label:"SNL — Sucessão Números/Letras",ph:"0–48",ref:"E22"},
+    {id:"ps",label:"PS — Procurar Símbolos",ph:"0–60",ref:"E24"}
   ],
   calcular(vals,ctx){
-    const bruto=(+vals.cv||0)+(+vals.rp||0)+(+vals.mo||0)+(+vals.vo||0);
+    const sub=[+vals.sm||0,+vals.vc||0,+vals.in||0,+vals.co||0,+vals.cb||0,+vals.rp||0,+vals.dg||0,+vals.ar||0,+vals.snl||0,+vals.cd||0,+vals.ps||0,+vals.cn||0];
+    const preenchidos=sub.filter(v=>v>0);
+    if(preenchidos.length<4) return {erro:"Mínimo de 4 subtestes preenchidos"};
+    const soma=sub.reduce((a,b)=>a+b,0);
     const media=40+ESC_DELTA_Z[ctx.escolaridade]*6, dp=6;
-    let z=(bruto-media)/dp;
+    let z=(soma/preenchidos.length-media)/dp;
     const qi=zParaQI(z);
-    return {bruto,brutoDesc:"Σ escores ponderados",z,valor:qi,valorLabel:"QI composto",media:Math.round(media),dp};
+    return {bruto:Math.round(soma/preenchidos.length),brutoDesc:"Média ponderados",z,valor:qi,valorLabel:"QI composto",media:Math.round(media),dp};
   }
 },
 {
@@ -606,9 +733,14 @@ const TESTES = [
   fonte:"Malloy-Diniz et al. (RAVLT-NORMAS); pag 53", faixa_etaria:"6-92 anos",
   estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
   campos:[
-    {id:"a1",label:"Ensaio A1",ph:"0–15"},{id:"a2",label:"Ensaio A2",ph:"0–15"},
-    {id:"a3",label:"Ensaio A3",ph:"0–15"},{id:"a4",label:"Ensaio A4",ph:"0–15"},
-    {id:"a5",label:"Ensaio A5",ph:"0–15"}
+    {id:"a1",label:"A1 — Evocação I",ph:"0–15",ref:"C26"},
+    {id:"a2",label:"A2 — Evocação II",ph:"0–15",ref:"D26"},
+    {id:"a3",label:"A3 — Evocação III",ph:"0–15",ref:"E26"},
+    {id:"a4",label:"A4 — Evocação IV",ph:"0–15",ref:"F26"},
+    {id:"a5",label:"A5 — Evocação V",ph:"0–15",ref:"G26"},
+    {id:"b1",label:"B1 — Lista B (interferente)",ph:"0–15",ref:"I26"},
+    {id:"a6",label:"A6 — Evocação tardia",ph:"0–15",ref:"J26"},
+    {id:"a7",label:"A7 — Reconhecimento",ph:"0–15",ref:"K26"}
   ],
   calcular(vals,ctx){
     const bruto=(+vals.a1||0)+(+vals.a2||0)+(+vals.a3||0)+(+vals.a4||0)+(+vals.a5||0);
@@ -715,16 +847,18 @@ const TESTES = [
   fonte:"Cambraia SV – Vetor 2018", faixa_etaria:"6-82 anos",
   estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
   campos:[
-    {id:"ac",label:"Acertos",ph:"0–80"},
-    {id:"er",label:"Erros",ph:"0–40"},
-    {id:"te",label:"Tempo (s)",ph:"seg."}
+    {id:"ac",label:"A — Acertos",ph:"0–180",ref:"C14"},
+    {id:"er",label:"E — Erros",ph:"0–180",ref:"D14"},
+    {id:"om",label:"O — Omissões",ph:"0–180",ref:"E14"}
   ],
   calcular(vals,ctx){
-    const bruto=(+vals.ac||0);
+    const a=(+vals.ac||0), e=(+vals.er||0), o=(+vals.om||0);
+    const pontos=a-e-o;
+    if(pontos<0) return {erro:"Pontos (A−E−O) negativo: verifique os valores"};
     const media=52+ESC_DELTA_Z[ctx.escolaridade]*12, dp=12;
-    let z=(bruto-media)/dp;
+    let z=(pontos-media)/dp;
     const pct=zToPercentil(z);
-    return {bruto,brutoDesc:"Acertos",z,valor:pct,valorLabel:"Percentil direto",media:Math.round(media),dp};
+    return {bruto:pontos,brutoDesc:"Pontos (A−E−O)",z,valor:pct,valorLabel:"Percentil direto",media:Math.round(media),dp};
   }
 },
 {
@@ -1412,6 +1546,13 @@ function statusBadge(status){
 /* ============================================================================
    SELEÇÃO DE TESTE + RENDER DOS CAMPOS
    ============================================================================ */
+/* Resolve o schemaId correspondente a um testId do protótipo. Retorna null se
+   o teste não tem schema (vineland, pepr). */
+function schemaIdDe(testId){
+  for(const sid in SCHEMA_TO_TEST){ if(SCHEMA_TO_TEST[sid]===testId) return sid; }
+  return null;
+}
+
 function selecionarTeste(id){
   testeAtual=TESTES.find(t=>t.id===id)||null;
   if(!testeAtual){
@@ -1421,41 +1562,186 @@ function selecionarTeste(id){
     selTesteNome.textContent="Selecione um teste no catálogo";
     return;
   }
+  // Determina se o teste tem schema de validação
+  const sid=schemaIdDe(testeAtual.id);
+  testeAtual._schemaId = sid;                        // null p/ sem schema
+  testeAtual._schema   = sid ? SCHEMAS[sid] : null;
+
   selTesteNome.textContent=`${testeAtual.nome_curto} — ${testeAtual.nome}`;
   testMeta.innerHTML=`
     ${statusBadge(testeAtual.status)}
     <span class="chip"><b>${testeAtual.categoria}</b></span>
     <span class="chip">Faixa: <b>${testeAtual.faixa_etaria}</b></span>
     <span class="chip">Escala: <b>${testeAtual.escala}</b></span>
+    ${sid?`<span class="badge ok"><span class="d"></span>Validação ativa</span>`:`<span class="badge muted"><span class="d"></span>Sem schema</span>`}
   `;
-  testDesc.innerHTML=`<b>${testeAtual.nome_curto}.</b> Fonte normativa: <b>${testeAtual.fonte}</b>. ${testeAtual.maiorMelhor?"Escore alto = melhor desempenho.":"Escore alto = pior desempenho (inverte o Z)."}`;
-  // campos — grid responsivo
-  const n=testeAtual.campos.length;
+  // badges informativos de regras (inversão de sinal, etc.) — não bloqueiam
+  const invBadge = temInversaoSinal(testeAtual._schema)
+    ? `<span class="badge info"><span class="d"></span>Inverte sinal do Z</span>` : "";
+  testMeta.innerHTML += invBadge;
+  const invDesc = testeAtual._schema ? descInversao(testeAtual._schema) : "";
+  testDesc.innerHTML=`<b>${testeAtual.nome_curto}.</b> Fonte normativa: <b>${testeAtual.fonte}</b>. `+
+    `${testeAtual.maiorMelhor?"Escore alto = melhor desempenho.":"Escore alto = pior desempenho (inverte o Z)."} `+
+    `${sid?"Validação de campos (min/máx/obrigatórios) ativa conforme schema.":""}${invDesc}`;
+
+  // CAMPOS: se há schema, renderiza campos do schema (com min/max/obrigatorio);
+  // senão, mantém o fluxo original (campos do protótipo).
+  const camposFonte = testeAtual._schema
+    ? expandirCamposSchema(testeAtual._schema)
+    : testeAtual.campos.map(c=>({...c, _tipo:"number"}));
+  const n=camposFonte.length;
   let html="";
   if(n===1){
-    html=testeAtual.campos.map(c=>campoHTML(c)).join("");
+    html=camposFonte.map(c=>campoHTML(c)).join("");
   } else if(n<=2){
-    html=`<div class="row-2">${testeAtual.campos.map(c=>campoHTML(c)).join("")}</div>`;
+    html=`<div class="row-2">${camposFonte.map(c=>campoHTML(c)).join("")}</div>`;
   } else {
-    // 2 por linha
     for(let i=0;i<n;i+=2){
-      const par=testeAtual.campos.slice(i,i+2);
+      const par=camposFonte.slice(i,i+2);
       if(par.length===2) html+=`<div class="row-2">${par.map(c=>campoHTML(c)).join("")}</div>`;
       else html+=campoHTML(par[0]);
     }
   }
   camposTeste.innerHTML=html;
   errosCalc.innerHTML="";
+  // anexa validação em tempo real a todos os campos numéricos/select
+  anexarValidacaoCampos();
   testePanel.style.display="block";
   resultEmpty.style.display="none";
   resultBox.classList.remove("show");
   renderList(); // marca o item ativo
 }
+
+/* Expandir campos do schema em definições de UI. Tipos:
+   - inteiro/numero   -> input number com min/max/obrigatorio
+   - select/texto     -> input apropriado (valida apenas obrigatório)
+   - lista_likert     -> UM campo "soma dos N itens" com min/max = escala*N */
+function expandirCamposSchema(schema){
+  const out=[];
+  for(const c of schema.campos){
+    const t=c.tipo||"inteiro";
+    if(t==="lista_likert"){
+      const min=(c.escala_min??0)*c.num_itens;
+      const max=(c.escala_max??0)*c.num_itens;
+      out.push({
+        id:c.id, label:c.label, _tipo:"number",
+        min, max, obrigatorio:!!c.obrigatorio,
+        _hint:`Soma dos ${c.num_itens} itens (cada um ${c.escala_min}–${c.escala_max}). Total entre ${min} e ${max}.`
+      });
+    } else if(t==="select"){
+      out.push({id:c.id, label:c.label, _tipo:"select",
+        opcoes:c.opcoes||[], obrigatorio:!!c.obrigatorio});
+    } else if(t==="texto"){
+      out.push({id:c.id, label:c.label, _tipo:"text",
+        obrigatorio:!!c.obrigatorio, ph:c.ph||(c.placeholder||"")});
+    } else {
+      // inteiro / numero
+      out.push({id:c.id, label:c.label, _tipo:"number",
+        min:c.min, max:c.max, obrigatorio:!!c.obrigatorio,
+        ph: (c.min!=null&&c.max!=null)?`${c.min}–${c.max}`:(c.ph||"")});
+    }
+  }
+  return out;
+}
+
 function campoHTML(c){
-  return `<div class="field">
-    <label class="lbl" for="f_${c.id}">${c.label}</label>
-    <input type="number" id="f_${c.id}" data-k="${c.id}" placeholder="${c.ph||''}" min="0" step="any">
+  const req = c.obrigatorio ? `<span class="req">*</span>` : "";
+  if(c._tipo==="select"){
+    const opts=(c.opcoes||[]).map(o=>`<option value="${o}">${o}</option>`).join("");
+    return `<div class="field" data-fid="${c.id}">
+      <label class="lbl" for="f_${c.id}">${c.label}${req}</label>
+      <select id="f_${c.id}" data-k="${c.id}" data-tipo="select" data-obr="${c.obrigatorio?1:0}">
+        <option value="">— selecione —</option>${opts}
+      </select>
+    </div>`;
+  }
+  if(c._tipo==="text"){
+    return `<div class="field" data-fid="${c.id}">
+      <label class="lbl" for="f_${c.id}">${c.label}${req}</label>
+      <input type="text" id="f_${c.id}" data-k="${c.id}" data-tipo="text" data-obr="${c.obrigatorio?1:0}" placeholder="${c.ph||''}">
+    </div>`;
+  }
+  // number (default)
+  const minAttr = (c.min!=null)?`data-min="${c.min}"`:"";
+  const maxAttr = (c.max!=null)?`data-max="${c.max}"`:"";
+  const ph = c.ph || (c.min!=null&&c.max!=null?`${c.min}–${c.max}`:"");
+  const hint = (c.min!=null&&c.max!=null)
+    ? `<div class="field-hint-range">Faixa válida: ${c.min} a ${c.max}</div>` : "";
+  const likertHint = c._hint?`<div class="likert-hint">${c._hint}</div>`:"";
+  return `<div class="field" data-fid="${c.id}">
+    <label class="lbl" for="f_${c.id}">${c.label}${req}</label>
+    <input type="number" id="f_${c.id}" data-k="${c.id}" data-tipo="number"
+      ${minAttr} ${maxAttr} data-obr="${c.obrigatorio?1:0}" placeholder="${ph}" step="any" inputmode="decimal">
+    ${hint}${likertHint}
   </div>`;
+}
+
+/* ---------- Anexa listeners de validação em tempo real ---------- */
+function anexarValidacaoCampos(){
+  camposTeste.querySelectorAll("input[data-tipo='number']").forEach(inp=>{
+    inp.addEventListener("blur",()=>validarCampoIndividual(inp));
+    inp.addEventListener("input",()=>{
+      // limpa estado de erro enquanto digita; revalida só no blur, mas remove o vermelho
+      if(inp.classList.contains("v-invalid")) validarCampoIndividual(inp);
+    });
+  });
+  camposTeste.querySelectorAll("select[data-tipo='select'], input[data-tipo='text']").forEach(el=>{
+    el.addEventListener("change",()=>validarCampoIndividual(el));
+    el.addEventListener("blur",()=>validarCampoIndividual(el));
+  });
+}
+
+/* Valida UM campo isoladamente (onBlur/onChange). Aplica borda vermelha +
+   mensagem, ou flash verde de 1s se válido. Retorna true( ok )/false( erro ). */
+function validarCampoIndividual(el){
+  const fid=el.dataset.k;
+  const wrap=el.closest(".field");
+  // remove mensagem de erro anterior deste campo
+  const errAnt=wrap.querySelector(".field-err"); if(errAnt) errAnt.remove();
+  const min=el.dataset.min!=null?parseFloat(el.dataset.min):null;
+  const max=el.dataset.max!=null?parseFloat(el.dataset.max):null;
+  const obr=el.dataset.obr==="1";
+  const raw=(el.value||"").trim();
+  let erroMsg=null;
+
+  if(el.dataset.tipo==="number"){
+    if(raw===""){
+      if(obr) erroMsg="Campo obrigatório.";
+    } else if(isNaN(+raw)){
+      erroMsg="Valor não numérico.";
+    } else {
+      const v=parseFloat(raw);
+      if(min!=null&&max!=null){
+        if(v<min||v>max) erroMsg=`Valor deve estar entre ${min} e ${max}.`;
+      } else if(min!=null&&v<min){
+        erroMsg=`Valor deve ser ≥ ${min}.`;
+      } else if(max!=null&&v>max){
+        erroMsg=`Valor deve ser ≤ ${max}.`;
+      }
+    }
+  } else { // select / text
+    if(obr&&raw==="") erroMsg="Selecione/Preencha este campo obrigatório.";
+  }
+
+  if(erroMsg){
+    el.classList.add("v-invalid"); el.classList.remove("v-valid");
+    wrap.classList.add("v-invalid");
+    const d=document.createElement("div"); d.className="field-err";
+    d.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v6m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>${erroMsg}`;
+    wrap.appendChild(d);
+    return false;
+  }
+  // válido: flash verde se tinha valor (não vazios opcionais não pisca)
+  wrap.classList.remove("v-invalid");
+  if(raw!==""){
+    el.classList.remove("v-invalid");
+    el.classList.add("v-valid");
+    clearTimeout(el._vt);
+    el._vt=setTimeout(()=>el.classList.remove("v-valid"),1000);
+  } else {
+    el.classList.remove("v-valid"); el.classList.remove("v-invalid");
+  }
+  return true;
 }
 
 /* ============================================================================
@@ -1482,26 +1768,302 @@ function atualizarIdade(){
 }
 
 /* ============================================================================
-   VALIDAÇÃO
+   VALIDAÇÃO — camada de schemas (bloqueia cálculo se houver erros)
+   ---------------------------------------------------------------------------
+   Percorre TODOS os campos obrigatórios + min/max de cada campo, e avalia as
+   regras de consistência do schema (formula, formula_max, soma_max,
+   comparacao_campo, etc.). Retorna {ok, erros[], avisos[], idade}.
+   Avisos (range_idade, alerta_clinico, tendencia_esperada) NÃO bloqueiam.
    ============================================================================ */
 function validar(){
-  const erros=[];
+  const erros=[];   // bloqueiam
+  const avisos=[];  // não bloqueiam (mostrados como warning)
   if(!$("pNome").value.trim()) erros.push("Informe o nome do paciente.");
   const idade=calcIdade($("pNasc").value);
   if(idade===null) erros.push("Informe uma data de nascimento válida.");
-  const inputs=camposTeste.querySelectorAll("input[type=number]");
-  let vazios=0;
-  inputs.forEach(inp=>{
-    const v=inp.value.trim();
-    if(v===""||isNaN(+v)){ vazios++; inp.style.borderColor="#dc2626"; inp.style.background="#fef2f2"; }
-    else { inp.style.borderColor=""; inp.style.background=""; }
+
+  const schema=testeAtual&&testeAtual._schema;
+
+  // 1) validação campo-a-campo (obrigatório + min/max)
+  camposTeste.querySelectorAll("[data-k]").forEach(el=>{
+    const ok=validarCampoIndividual(el);
+    if(!ok){
+      const lbl=el.closest(".field").querySelector(".lbl");
+      const nome=(lbl?lbl.textContent:"").replace("*","").trim();
+      const errEl=el.closest(".field").querySelector(".field-err");
+      erros.push(`${nome}: ${(errEl?errEl.textContent:window.getComputedStyle(errEl).visibility, errEl?errEl.textContent.replace(/^[^a-zA-Z]+/,""):"inválido")}`);
+    }
   });
-  if(vazios>0) erros.push(`Preencha todos os ${inputs.length} campos de escore bruto.`);
-  return {ok:erros.length===0,erros,idade};
+
+  // 2) regras de consistência do schema
+  if(schema){
+    const vals=coletarValores();
+    for(const r of (schema.regras_consistencia||[])){
+      const res=avaliarRegra(r,vals,schema);
+      if(res.erro) erros.push(res.erro);
+      if(res.aviso) avisos.push(res.aviso);
+    }
+    // range_idade — trata como AVISO (não bloqueia)
+    const idadeMeses = idade ? (idade.anos*12 + idade.meses) : null;
+    if(idadeMeses!=null && schema.faixa_etaria && typeof schema.faixa_etaria.min==="number"){
+      const fe=schema.faixa_etaria;
+      if(idadeMeses<fe.min || idadeMeses>fe.max){
+        const anosTxt = (fe.min/12).toFixed(0)+" a "+(fe.max/12).toFixed(0)+" anos";
+        avisos.push(`Paciente com ${idade.anos} anos está fora da faixa etária do teste (${fe.label||anosTxt}). Confirme se a aplicação é apropriada.`);
+      }
+    }
+  }
+  return {ok:erros.length===0, erros, avisos, idade};
 }
-function mostrarErros(erros){
-  if(erros.length===0){ errosCalc.innerHTML=""; return; }
-  errosCalc.innerHTML=erros.map(e=>`<div class="vmsg"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v6m0 4h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>${e}</div>`).join("");
+
+function mostrarErros(res){
+  if(!res) return;
+  let html="";
+  // avisos (não bloqueiam) — caixa amarela no topo
+  if(res.avisos && res.avisos.length){
+    html+=`<div class="warn-box"><div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 9v4m0 4h.01M10.3 4.3 2.5 18a2 2 0 0 0 1.7 3h15.6a2 2 0 0 0 1.7-3L13.7 4.3a2 2 0 0 0-3.4 0z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>`+
+          `<div class="t">${res.avisos.map(a=>`<div>⚠ ${a}</div>`).join("")}</div></div>`;
+  }
+  // erros (bloqueiam) — caixa vermelha com lista
+  if(res.erros && res.erros.length){
+    html+=`<div class="err-box"><div class="err-head"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v6m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Não foi possível calcular — corrija os itens abaixo:</div>`+
+          `<ul class="err-list">${res.erros.map(e=>`<li>${e}</li>`).join("")}</ul></div>`;
+  }
+  errosCalc.innerHTML=html;
+}
+
+/* Coleta valores numéricos de TODOS os campos (id -> número ou undefined). */
+function coletarValores(){
+  const vals={};
+  camposTeste.querySelectorAll("[data-k]").forEach(el=>{
+    const k=el.dataset.k;
+    const raw=(el.value||"").trim();
+    if(el.dataset.tipo==="select"||el.dataset.tipo==="text"){
+      if(raw) vals[k]=raw;   // strings para selects
+    } else {
+      vals[k] = (raw===""||isNaN(+raw)) ? undefined : parseFloat(raw);
+    }
+  });
+  return vals;
+}
+
+/* ---------- Avaliador de regras de consistência ---------- */
+function avaliarRegra(r, vals, schema){
+  const tipo=r.tipo;
+  // Regras que NÃO bloqueiam (informação clínica):
+  if(r.alerta_nao_bloqueia) return {};
+  if(tipo==="tendencia_esperada"||tipo==="alerta_clinico"||tipo==="formula_derivada"||
+     tipo==="inversao_sinal"||tipo==="inversao_itens_chave"||tipo==="soma_por_grupo"||
+     tipo==="range_idade"||tipo==="quantidade_obrigatoria_condicional"){
+    return {};
+  }
+  // maximo_por_campo / range_campo: já coberto pela validação individual,
+  // mas reforçamos para campos com max_por_campo_map
+  if(tipo==="maximo_por_campo"||tipo==="range_campo"){
+    const map=r.max_por_campo_map||(r.campo?{[r.campo]:r.max}:{});
+    if(r.campos && r.max!=null && Object.keys(map).length===0){
+      r.campos.forEach(c=>map[c]=r.max);
+    }
+    for(const cid in map){
+      const v=vals[cid];
+      if(v!=null && (v>map[cid] || (r.min!=null && v<r.min))){
+        const lbl=labelDoCampo(schema,cid);
+        return {erro:`${lbl}: ${r.descricao||("valor fora do permitido")}`};
+      }
+    }
+    return {};
+  }
+  // formula (min_resultado) e formula_max (max) e comparacao_formula
+  if(tipo==="formula"||tipo==="formula_max"||tipo==="comparacao_formula"){
+    const res=evalFormulaSegura(r.formula, vals);
+    if(res===null) return {}; // operandos ausentes → não avalia
+    if(tipo==="formula" && r.min_resultado!=null && res<r.min_resultado){
+      return {erro:`${r.descricao||"Consistência"} — resultado = ${fmtNum(res)} (mínimo ${r.min_resultado}).`};
+    }
+    if(tipo==="formula_max" && r.max!=null && res>r.max){
+      return {erro:`${r.descricao||"Consistência"} — resultado = ${fmtNum(res)} excede o máximo ${r.max}.`};
+    }
+    if(tipo==="comparacao_formula"){
+      const b=valorDeReferencia(r.campo_b, vals);
+      if(b!=null && !comparar(res, r.operador||"<=", b)){
+        return {erro:`${r.descricao||"Consistência"} — ${fmtNum(res)} ${r.operador} ${fmtNum(b)} não satisfeito.`};
+      }
+    }
+    return {};
+  }
+  // comparacao_campo: campo_a operador campo_b
+  if(tipo==="comparacao_campo"){
+    const a=vals[r.campo_a], b=vals[r.campo_b];
+    if(a==null||b==null) return {};
+    if(!comparar(a, r.operador, b)){
+      return {erro:`${r.descricao||"Consistência"} — ${labelDoCampo(schema,r.campo_a)} (${fmtNum(a)}) ${r.operador} ${labelDoCampo(schema,r.campo_b)} (${fmtNum(b)}) não satisfeito.`};
+    }
+    return {};
+  }
+  // soma_max / soma_constante_bounds: soma de campos ≤ max (ou dentro de [min,max])
+  if(tipo==="soma_max"||tipo==="soma_constante_bounds"||tipo==="soma_constante"){
+    const cs=r.campos||Object.keys(r.max_por_campo_map||{});
+    const soma=cs.reduce((s,c)=>s+(vals[c]||0),0);
+    if(tipo==="soma_max" && r.max!=null && soma>r.max){
+      return {erro:`Soma dos campos (${fmtNum(soma)}) excede o máximo ${r.max}.`};
+    }
+    if(tipo==="soma_constante" && r.esperado!=null){
+      const tol=r.tolerancia||0;
+      if(Math.abs(soma-r.esperado)>tol){
+        return {erro:`Soma dos campos = ${fmtNum(soma)} (esperado ${r.esperado}±${tol}).`};
+      }
+    }
+    if(tipo==="soma_constante_bounds"){
+      if(r.min_esperado!=null && soma<r.min_esperado) return {erro:`Soma (${soma}) abaixo do mínimo esperado (${r.min_esperado}).`};
+      if(r.max_esperado!=null && soma>r.max_esperado) return {erro:`Soma (${soma}) acima do máximo esperado (${r.max_esperado}).`};
+    }
+    return {};
+  }
+  // igualdade_constante
+  if(tipo==="igualdade_constante"){
+    const v=vals[r.campo];
+    if(v!=null && r.esperado!=null && v!==r.esperado){
+      return {erro:`${labelDoCampo(schema,r.campo)} deve ser ${r.esperado}.`};
+    }
+    return {};
+  }
+  // quantidade_obrigatoria: mínimo N campos preenchidos
+  if(tipo==="quantidade_obrigatoria"){
+    const preench=(schema.campos||[]).filter(c=>vals[c.id]!=null && vals[c.id]!=="").length;
+    if(preench<(r.min||0)){
+      return {erro:`Preencha ao menos ${r.min} campo(s) — atualmente ${preench} preenchido(s). (${r.descricao||""})`};
+    }
+    return {};
+  }
+  // range_likert (validação individual já cobre via min/max do campo soma,
+  // mas reforçamos caso a regra traga min/max globais)
+  if(tipo==="range_likert"){
+    // percorre campos likert expandidos: seus inputs já têm data-min/max
+    return {};
+  }
+  return {};
+}
+
+function labelDoCampo(schema, cid){
+  if(!schema) return cid;
+  const c=(schema.campos||[]).find(x=>x.id===cid);
+  return c? c.label : cid;
+}
+function fmtNum(n){
+  if(n==null) return "—";
+  return Number.isInteger(n)? String(n) : (+n).toFixed(2).replace(/\.?0+$/,"");
+}
+function comparar(a, op, b){
+  switch(op){
+    case "==": case "===": return a==b;
+    case "!=": case "!==": return a!=b;
+    case "<=": return a<=b;
+    case ">=": return a>=b;
+    case "<":  return a<b;
+    case ">":  return a>b;
+  }
+  return true;
+}
+
+/* Resolve um "campo_b" de uma regra: pode ser id de campo ou constante.
+   Se for id existente em vals, usa o valor; senão tenta parsear número. */
+function valorDeReferencia(ref, vals){
+  if(ref==null) return null;
+  if(ref in vals) return vals[ref];
+  const n=parseFloat(ref);
+  return isNaN(n)?null:n;
+}
+
+/* ---------- Avaliador de fórmulas (sandbox restrito) ----------
+   Tokeniza a fórmula e substitui cada identificador por um valor numérico
+   resolvido a partir de vals (por id, label, ou sinônimos comuns).
+   Operadores suportados: + - * / ( ) e números. NUNCA usa eval(). */
+function evalFormulaSegura(formula, vals){
+  if(!formula) return null;
+  // mapa de sinônimos: token (maiúsculas/minúsculas) -> campoId
+  const sinonimos = construirSinonimos(vals);
+  const tokens = formula.match(/[A-Za-z_][A-Za-z0-9_]*|[0-9]*\.?[0-9]+|[+\-*/()]/g);
+  if(!tokens) return null;
+  const saida=[];
+  for(let tk of tokens){
+    if(/^[0-9.]/.test(tk)){ saida.push(parseFloat(tk)); }
+    else if(/[+\-*/()]/.test(tk)){ saida.push(tk); }
+    else {
+      // identificador: resolver
+      const chave=tk.toLowerCase();
+      let cid=sinonimos[chave]||sinonimos[tk];
+      if(!cid){
+        // tenta match direto em vals
+        if(tk in vals) cid=tk;
+        else if(chave in vals) cid=chave;
+      }
+      if(!cid || vals[cid]==null || vals[cid]==="" ) return null; // operando faltante
+      saida.push(parseFloat(vals[cid]));
+    }
+  }
+  // avaliação com precedência (Shunting-yard simplificado)
+  try{ return avaliarExpr(saida); }catch(e){ return null; }
+}
+/* Índice de sinônimos: id do campo, label (lowercase, primeira palavra),
+   e siglas comuns (A=acertos, E=erros, O=omissoes, EO, ET, etc.). */
+function construirSinonimos(vals){
+  const idx={};
+  const schema=testeAtual&&testeAtual._schema;
+  // sinônimos genéricos
+  const genericos={
+    a:"acertos", acertos:"acertos", e:"erros", erros:"erros", o:"omissoes", omissoes:"omissoes",
+    total:"total", total_ss:"total_ss", tn:"total_ss", eo:"eo", et:"et",
+    qe:"qe"
+  };
+  for(const k in vals){ idx[k.toLowerCase()]=k; }
+  if(schema){
+    (schema.campos||[]).forEach(c=>{
+      idx[c.id.toLowerCase()]=c.id;
+      // primeira palavra do label, sem acento
+      const prim=(c.label||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").split(/[\s(]/)[0];
+      if(prim) idx[prim]=c.id;
+    });
+  }
+  for(const k in genericos){ if(!(k in idx)) idx[k]=genericos[k]; if(!(genericos[k] in vals)) {/* skip */} }
+  return idx;
+}
+/* Avalia lista de tokens (números e operadores) respeitando precedência. */
+function avaliarExpr(tokens){
+  // parser recursivo descendente
+  let pos=0;
+  function peek(){ return tokens[pos]; }
+  function next(){ return tokens[pos++]; }
+  function parseExpr(){
+    let v=parseTerm();
+    while(peek()==="+"||peek()==="-"){ const op=next(); const r=parseTerm(); v= op==="+"? v+r : v-r; }
+    return v;
+  }
+  function parseTerm(){
+    let v=parseFactor();
+    while(peek()==="*"||peek()==="/"){ const op=next(); const r=parseFactor(); v= op==="*"? v*r : v/r; }
+    return v;
+  }
+  function parseFactor(){
+    const t=peek();
+    if(t==="("){ next(); const v=parseExpr(); if(next()!==")") throw new Error(")"); return v; }
+    if(t==="-"){ next(); return -parseFactor(); }
+    if(typeof t==="number"){ return next(); }
+    throw new Error("token inesperado: "+t);
+  }
+  const r=parseExpr();
+  if(pos!==tokens.length) throw new Error("tokens sobrando");
+  return r;
+}
+
+/* ---------- Helpers para inversão de sinal (badge informativo) ---------- */
+function temInversaoSinal(schema){
+  if(!schema) return false;
+  return (schema.regras_consistencia||[]).some(r=>r.tipo==="inversao_sinal"||r.tipo==="inversao_itens_chave");
+}
+function descInversao(schema){
+  const r=(schema.regras_consistencia||[]).find(x=>x.tipo==="inversao_sinal");
+  if(r) return `Teste com inversão de sinal do tempo (${(r.campos||[]).join(", ")||"campos de tempo"}): menor valor = melhor desempenho.`;
+  return "";
 }
 
 /* ============================================================================
