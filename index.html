@@ -658,792 +658,726 @@ const SCHEMA_TO_TEST = {
 /* Testes do protótipo que NÃO têm schema → mantêm fluxo original. */
 const TESTES_SEM_SCHEMA = new Set(["vineland","pepr"]);
 const TESTES = [
-
-/* ===================== INTELIGÊNCIA ===================== */
 {
-  id:"wisc_iv", nome:"Escala Wechsler de Inteligência para Crianças IV", nome_curto:"WISC-IV",
+  id:"wisc_iv", nome:"WISC-IV", nome_curto:"WISC-IV",
   categoria:"Inteligência", catGrupo:"Inteligência", status:"CONFIRMADO-BR",
   fonte:"Tabela A8.1 (Br); Flanagan & Kaufman 2009", faixa_etaria:"6-16 anos",
-  estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
-  campos:[
-    {id:"cb",label:"CB — Cubos",ph:"0–68",ref:"E10"},
-    {id:"sm",label:"SM — Semelhanças",ph:"0–32",ref:"E11"},
-    {id:"vc",label:"VC — Vocabulário",ph:"0–68",ref:"E12"},
-    {id:"cn",label:"CN — Cancelamento",ph:"0–62",ref:"E13"},
-    {id:"co",label:"CO — Conhecimentos",ph:"0–34",ref:"E14"},
-    {id:"dg",label:"DG — Dígitos",ph:"0–48",ref:"E16"},
-    {id:"in",label:"IN — Informação",ph:"0–32",ref:"E17"},
-    {id:"cd",label:"CD — Códigos",ph:"0–119",ref:"E18"},
-    {id:"rp",label:"RP — Raciocínio Matricial",ph:"0–35",ref:"E19"},
-    {id:"ar",label:"AR — Aritmética",ph:"0–34",ref:"E20"},
-    {id:"snl",label:"SNL — Sucessão Números/Letras",ph:"0–48",ref:"E22"},
-    {id:"ps",label:"PS — Procurar Símbolos",ph:"0–60",ref:"E24"}
-  ],
-  calcular(vals,ctx){
-    const sub=[+vals.sm||0,+vals.vc||0,+vals.in||0,+vals.co||0,+vals.cb||0,+vals.rp||0,+vals.dg||0,+vals.ar||0,+vals.snl||0,+vals.cd||0,+vals.ps||0,+vals.cn||0];
-    const preenchidos=sub.filter(v=>v>0);
-    if(preenchidos.length<4) return {erro:"Mínimo de 4 subtestes preenchidos"};
-    const soma=sub.reduce((a,b)=>a+b,0);
-    const media=40+ESC_DELTA_Z[ctx.escolaridade]*6, dp=6;
-    let z=(soma/preenchidos.length-media)/dp;
-    const qi=zParaQI(z);
-    return {bruto:Math.round(soma/preenchidos.length),brutoDesc:"Média ponderados",z,valor:qi,valorLabel:"QI composto",media:Math.round(media),dp};
-  }
-},
-{
-  id:"wais_iii", nome:"Escala Wechsler de Inteligência para Adultos III", nome_curto:"WAIS-III",
-  categoria:"Inteligência", catGrupo:"Inteligência", status:"CONFIRMADO-BR",
-  fonte:"Tabela A.1 (Br) Wechsler", faixa_etaria:"16-89 anos",
-  estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
-  campos:[
-    {id:"vc",label:"Compreensão Verbal (ICV)",ph:"1–19"},
-    {id:"or",label:"Organização Perceptual (IOP)",ph:"1–19"},
-    {id:"mc",label:"Memória de Trabalho (IMT)",ph:"1–19"},
-    {id:"vp",label:"Velocidade de Process. (IVP)",ph:"1–19"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.vc||0)+(+vals.or||0)+(+vals.mc||0)+(+vals.vp||0);
-    const media=40+ESC_DELTA_Z[ctx.escolaridade]*6, dp=6;
-    let z=(bruto-media)/dp;
-    const qi=zParaQI(z);
-    return {bruto,brutoDesc:"Σ escores ponderados",z,valor:qi,valorLabel:"QI composto",media:Math.round(media),dp};
-  }
-},
-{
-  id:"wasi", nome:"Escala Abreviada de Inteligência (WASI)", nome_curto:"WASI",
-  categoria:"Inteligência", catGrupo:"Inteligência", status:"PARCIAL",
-  fonte:"Tabela 27 pag 67 do manual", faixa_etaria:"6-89 anos",
-  estratificacao:["idade","escolaridade"], escala:"QI", maiorMelhor:true,
-  campos:[
-    {id:"vocab",label:"Vocabulário (ponderado)",ph:"1–19"},
-    {id:"matr",label:"Matrizes (ponderado)",ph:"1–19"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.vocab||0)+(+vals.matr||0);
-    const media=20+ESC_DELTA_Z[ctx.escolaridade]*3, dp=4;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Σ 2 subtestes",z,valor:zParaQI(z),valorLabel:"QI estimado (2-subtestes)",media:Math.round(media),dp};
-  }
-},
-
-/* ===================== MEMÓRIA ===================== */
-{
-  id:"ravlt", nome:"Teste de Aprendizagem Auditivo-Verbal de Rey", nome_curto:"RAVLT",
-  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
-  fonte:"Malloy-Diniz et al. (RAVLT-NORMAS); pag 53", faixa_etaria:"6-92 anos",
-  estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
-  campos:[
-    {id:"a1",label:"A1 — Evocação I",ph:"0–15",ref:"C26"},
-    {id:"a2",label:"A2 — Evocação II",ph:"0–15",ref:"D26"},
-    {id:"a3",label:"A3 — Evocação III",ph:"0–15",ref:"E26"},
-    {id:"a4",label:"A4 — Evocação IV",ph:"0–15",ref:"F26"},
-    {id:"a5",label:"A5 — Evocação V",ph:"0–15",ref:"G26"},
-    {id:"b1",label:"B1 — Lista B (interferente)",ph:"0–15",ref:"I26"},
-    {id:"a6",label:"A6 — Evocação tardia",ph:"0–15",ref:"J26"},
-    {id:"a7",label:"A7 — Reconhecimento",ph:"0–15",ref:"K26"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.a1||0)+(+vals.a2||0)+(+vals.a3||0)+(+vals.a4||0)+(+vals.a5||0);
-    const media=48+ESC_DELTA_Z[ctx.escolaridade]*10+idadeDeltaZ(ctx.idade)*10, dp=10;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Evocação total A1–A5",z,valor:Math.round(50+z*10),valorLabel:"T-score",media:Math.round(media),dp};
-  }
-},
-{
-  id:"hvlt", nome:"Hopkins Verbal Learning Test – Revised", nome_curto:"HVLT-R",
-  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
-  fonte:"Miotto EC et al. 2012 – Arq Neuro-Psiquiatr", faixa_etaria:"18-85 anos",
-  estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
-  campos:[
-    {id:"r1",label:"Recall 1",ph:"0–12"},{id:"r2",label:"Recall 2",ph:"0–12"},
-    {id:"r3",label:"Recall 3",ph:"0–12"},{id:"dr",label:"Reconhecimento",ph:"0–24"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.r1||0)+(+vals.r2||0)+(+vals.r3||0);
-    const media=24+ESC_DELTA_Z[ctx.escolaridade]*4+idadeDeltaZ(ctx.idade)*5, dp=5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total de aprendizagem",z,valor:Math.round(50+z*10),valorLabel:"T-score",media:Math.round(media),dp};
-  }
-},
-{
-  id:"bvmt", nome:"Brief Visuospatial Memory Test – Revised", nome_curto:"BVMT-R",
-  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
-  fonte:"Miotto EC et al. 2012 – Arq Neuro-Psiquiatr", faixa_etaria:"18-85 anos",
-  estratificacao:["idade","escolaridade"], escala:"T", maiorMelhor:true,
-  campos:[
-    {id:"s1",label:"Ens. 1 (0–12)",ph:"0–12"},{id:"s2",label:"Ens. 2 (0–12)",ph:"0–12"},
-    {id:"s3",label:"Ens. 3 (0–12)",ph:"0–12"},{id:"rec",label:"Reconhecimento",ph:"0–6"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.s1||0)+(+vals.s2||0)+(+vals.s3||0);
-    const media=21+ESC_DELTA_Z[ctx.escolaridade]*4+idadeDeltaZ(ctx.idade)*5, dp=5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total dos 3 ensaios",z,valor:Math.round(50+z*10),valorLabel:"T-score",media:Math.round(media),dp};
-  }
-},
-{
-  id:"fig7pal", nome:"Teste de 7 Figuras e 7 Palavras", nome_curto:"7FIG-7PAL",
-  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
-  fonte:"Dados normativos documentados", faixa_etaria:"Adultos",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"fig_evo",label:"Evocação de figuras",ph:"0–7"},
-    {id:"pal_evo",label:"Evocação de palavras",ph:"0–7"}
-  ],
+  campos:[{id:"cb",label:"CB — Cubos",ph:"0+",ref:"E10"},{id:"sm",label:"SM — Semelhanças",ph:"0+",ref:"E11"},{id:"vc",label:"VC — Vocabulário",ph:"0+",ref:"E12"},{id:"cn",label:"CN — Cancelamento",ph:"0+",ref:"E13"},{id:"co",label:"CO — Conhecimentos/Compreensão",ph:"0+",ref:"E14"},{id:"dg",label:"DG — Dígitos",ph:"0+",ref:"E16"},{id:"in",label:"IN — Informação",ph:"0+",ref:"E17"},{id:"cd",label:"CD — Compreensão/Códigos",ph:"0+",ref:"E18"},{id:"rp",label:"RP — Raciocínio Matricial",ph:"0+",ref:"E19"},{id:"ar",label:"AR — Aritmética",ph:"0+",ref:"E20"},{id:"snl",label:"SNL — Sucessão Números/Letras",ph:"0+",ref:"E22"},{id:"ps",label:"PS — Procurar Símbolos",ph:"0+",ref:"E24"}],
   calcular(vals,ctx){
-    const bruto=(+vals.fig_evo||0)+(+vals.pal_evo||0);
-    const media=11+ESC_DELTA_Z[ctx.escolaridade]*2, dp=2.4;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Σ figuras + palavras",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"bams", nome:"Bateria de Avaliação da Memória Semântica", nome_curto:"BAMS",
-  categoria:"Memória", catGrupo:"Memória", status:"PARCIAL",
-  fonte:"Manual Vetor — sem citação explícita", faixa_etaria:"Adultos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"total",label:"Escore total",ph:"0–60"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.total||0);
-    const media=40+ESC_DELTA_Z[ctx.escolaridade]*8, dp=8;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
-  }
-},
-{
-  id:"corsi", nome:"Blocos de Corsi (Span visuoespacial)", nome_curto:"Corsi",
+  id:"ravlt", nome:"RAVLT", nome_curto:"RAVLT",
   categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
-  fonte:"Dias & Mecca – Avaliação Neuropsicológica Memória", faixa_etaria:"6+ anos",
+  fonte:"Malloy-Diniz et al., pag 53", faixa_etaria:"6-92 anos",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"span",label:"Span (blocos)",ph:"3–9"}],
+  campos:[{id:"data_aplicacao",label:"Data aplicacao",ph:"0+",ref:"N3"},{id:"trial_a1__palav",label:"Trial A1 - palavras evocadas",ph:"0+",ref:"C11:C25"},{id:"trial_a2",label:"Trial A2",ph:"0+",ref:"D11:D25"},{id:"trial_a3",label:"Trial A3",ph:"0+",ref:"E11:E25"},{id:"trial_a4",label:"Trial A4",ph:"0+",ref:"F11:F25"},{id:"trial_a5",label:"Trial A5",ph:"0+",ref:"G11:G25"},{id:"trial_b1_(lista",label:"Trial B1 (lista interferente)",ph:"0+",ref:"I11:I25"},{id:"trial_a6_(evoca",label:"Trial A6 (evocacao tardia)",ph:"0+",ref:"J11:J25"},{id:"trial_a7_(reevo",label:"Trial A7 (re-evocacao)",ph:"0+",ref:"K11:K25"},{id:"intrusoes_por_t",label:"Intrusoes por trial (texto livre)",ph:"0+",ref:"C30:C39 / D30:D39 / E30:E39 / F30:F39 / G30:G39 / I30:I39 / J30:J39 / K30:K39"},{id:"reconhecimento_",label:"Reconhecimento - resposta (S/N) por item",ph:"0+",ref:"C45,C46...C54 / E45:E54 / G45:G54 / I45:I54 / K45:K54"}],
   calcular(vals,ctx){
-    const bruto=(+vals.span||0);
-    const media=5+ESC_DELTA_Z[ctx.escolaridade]*0.6, dp=1;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Span máx.",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"figrey", nome:"Figura Complexa de Rey (Osterrieth)", nome_curto:"FigRey",
-  categoria:"Memória", catGrupo:"Memória", status:"PARCIAL",
-  fonte:"Normas presentes (RCFT) — sem citação clara", faixa_etaria:"6-90 anos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"cop",label:"Cópia (0–36)",ph:"0–36"},
-    {id:"evo",label:"Evocação (0–36)",ph:"0–36"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.cop||0);
-    const media=32+ESC_DELTA_Z[ctx.escolaridade]*1.2+idadeDeltaZ(ctx.idade)*1.5, dp=4.5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Cópia",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
-  }
-},
-
-/* ===================== ATENÇÃO ===================== */
-{
-  id:"ac", nome:"Teste de Atenção Concentrada (AC)", nome_curto:"AC",
+  id:"ac", nome:"Teste de Atenção Concentrada (AC)", nome_curto:"Teste de Atenção Con",
   categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
-  fonte:"Cambraia SV – Vetor 2018", faixa_etaria:"6-82 anos",
-  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
-  campos:[
-    {id:"ac",label:"A — Acertos",ph:"0–180",ref:"C14"},
-    {id:"er",label:"E — Erros",ph:"0–180",ref:"D14"},
-    {id:"om",label:"O — Omissões",ph:"0–180",ref:"E14"}
-  ],
-  calcular(vals,ctx){
-    const a=(+vals.ac||0), e=(+vals.er||0), o=(+vals.om||0);
-    const pontos=a-e-o;
-    if(pontos<0) return {erro:"Pontos (A−E−O) negativo: verifique os valores"};
-    const media=52+ESC_DELTA_Z[ctx.escolaridade]*12, dp=12;
-    let z=(pontos-media)/dp;
-    const pct=zToPercentil(z);
-    return {bruto:pontos,brutoDesc:"Pontos (A−E−O)",z,valor:pct,valorLabel:"Percentil direto",media:Math.round(media),dp};
-  }
-},
-{
-  id:"ac15", nome:"Atenção Concentrada versão reduzida (AC-15)", nome_curto:"AC-15",
-  categoria:"Atenção", catGrupo:"Atenção", status:"A_CONFIRMAR",
-  fonte:"A confirmar", faixa_etaria:"Adultos",
+  fonte:"Cambraia SV - Vetor 2018", faixa_etaria:"6-82 anos",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"ac",label:"Acertos",ph:"0–15"}],
+  campos:[{id:"acertos",label:"Acertos",ph:"0+",ref:"C14"},{id:"erros",label:"Erros",ph:"0+",ref:"D14"},{id:"omissões",label:"Omissões",ph:"0+",ref:"E14"}],
   calcular(vals,ctx){
-    const bruto=(+vals.ac||0);
-    const media=10+ESC_DELTA_Z[ctx.escolaridade]*2, dp=2.5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Acertos",z,valor:z.toFixed(2),valorLabel:"Z-score",media:media.toFixed(1),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"bpa", nome:"Bateria de Provas de Atenção (BPA)", nome_curto:"BPA",
-  categoria:"Atenção", catGrupo:"Atenção", status:"PARCIAL",
-  fonte:"Manual Vetor — sem citação explícita", faixa_etaria:"Adultos",
+  id:"bvmtr", nome:"BVMT-R", nome_curto:"BVMT-R",
+  categoria:"Geral", catGrupo:"Geral", status:"CONFIRMADO-BR",
+  fonte:"Aba BVMT-Normas (rId20/sheet20). Citado: 'Adulto - Regiao Ce", faixa_etaria:"Verificar",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"vig",label:"Atenção sustentada",ph:"0–100"},
-    {id:"alt",label:"Atenção alternada",ph:"0–100"}
-  ],
+  campos:[{id:"tabela_normativ",label:"Tabela normativa (faixa escolar 1-4 / 5-",ph:"0+",ref:"V3 (ou X3:X6 lista)"},{id:"t1__total_tenta",label:"T1 - Total tentativa 1 (0-12)",ph:"0+",ref:"D15"},{id:"t2__total_tenta",label:"T2 - Total tentativa 2 (0-12)",ph:"0+",ref:"E15"},{id:"t3__total_tenta",label:"T3 - Total tentativa 3 (0-12)",ph:"0+",ref:"F15"},{id:"evocacao_tardia",label:"Evocacao Tardia - Total",ph:"0+",ref:"D18"},{id:"reconhecimento_",label:"Reconhecimento - Total",ph:"0+",ref:"D22"}],
   calcular(vals,ctx){
-    const bruto=(+vals.vig||0);
-    const media=65+ESC_DELTA_Z[ctx.escolaridade]*12, dp=12;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Atenção sustentada",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"d2r", nome:"Teste d2 Revisado (Atenção concentrada)", nome_curto:"D2-R",
-  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
-  fonte:"Tabelas normativas Teste D2", faixa_etaria:"7-76 anos",
-  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
-  campos:[
-    {id:"tn",label:"Total processado (TN)",ph:"0–600"},
-    {id:"con",label:"Erros (E)",ph:"0–200"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.tn||0);
-    const media=350+ESC_DELTA_Z[ctx.escolaridade]*80, dp=80;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"TN (acertos líquidos)",z,valor:zToPercentil(z),valorLabel:"Percentil",media:Math.round(media),dp};
-  }
-},
-{
-  id:"stroop", nome:"Teste de Stroop (Palavras/Cores)", nome_curto:"STROOP",
-  categoria:"Atenção", catGrupo:"Função Executiva", status:"PARCIAL",
-  fonte:"Normas presentes — sem citação clara", faixa_etaria:"18-80 anos",
+  id:"hvltr", nome:"HVLT-R", nome_curto:"HVLT-R",
+  categoria:"Geral", catGrupo:"Geral", status:"CONFIRMADO-BR",
+  fonte:"Aba HVLT-Normas (rId48/sheet48). Referencia: 'Hopkins Verbal", faixa_etaria:"Verificar",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"p",label:"Cartão P (palavras)",ph:"acertos"},
-    {id:"c",label:"Cartão C (cores)",ph:"acertos"},
-    {id:"pc",label:"Cartão PC (palavras-cores)",ph:"acertos"}
-  ],
+  campos:[{id:"tabela_normativ",label:"Tabela normativa (anos escolarizacao)",ph:"0+",ref:"T4 / R4 (categoria)"},{id:"trial_a1__palav",label:"Trial A1 - palavras evocadas",ph:"0+",ref:"E16:E27"},{id:"trial_a2",label:"Trial A2",ph:"0+",ref:"H16:H27"},{id:"trial_a3",label:"Trial A3",ph:"0+",ref:"K16:K27"},{id:"trial_a4_(evoca",label:"Trial A4 (evocacao tardia)",ph:"0+",ref:"N16:N27"},{id:"reconhecimento_",label:"Reconhecimento - S/N por item (16 itens)",ph:"0+",ref:"coluna adjacente a T16:T23 e Y16:Y23 (R16:R23 / area reconhecimento)"}],
   calcular(vals,ctx){
-    const bruto=(+vals.p||0)+(+vals.c||0)+(+vals.pc||0);
-    const media=240+ESC_DELTA_Z[ctx.escolaridade]*45+idadeDeltaZ(ctx.idade)*30, dp=45;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Σ P+C+PC",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"trilhas", nome:"Teste de Trilhas (Trail Making A/B)", nome_curto:"TRILHAS",
-  categoria:"Atenção", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
-  fonte:"Lima RF & Ciasca SM", faixa_etaria:"6+ anos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
-  campos:[
-    {id:"ta",label:"Tempo TMT-A (s)",ph:"segundos"},
-    {id:"tb",label:"Tempo TMT-B (s)",ph:"segundos"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.ta||0);
-    // menor tempo = melhor (Z invertido)
-    const idadeAdj=ctx.idade?Math.max(0,(ctx.idade-40))*0.4:0;
-    const media=30+idadeAdj-ESC_DELTA_Z[ctx.escolaridade]*4, dp=12;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Tempo TMT-A",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:Math.round(media),dp};
-  }
-},
-{
-  id:"fdt", nome:"Fluência e Distração (FDT)", nome_curto:"FDT",
-  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
-  fonte:"Tabela 6.2 — normas por idade N=1033", faixa_etaria:"Adultos",
+  id:"figrey", nome:"FigRey", nome_curto:"FigRey",
+  categoria:"Visuoconstrução", catGrupo:"Visuoconstrução", status:"CONFIRMADO-BR",
+  fonte:"Manual RCFT - Casa do Psicólogo", faixa_etaria:"6+ anos",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"flu",label:"Fluência",ph:"nº itens"},
-    {id:"dist",label:"Distração",ph:"nº itens"}
-  ],
+  campos:[{id:"data_aplicacao",label:"Data aplicacao",ph:"0+",ref:"R3"},{id:"figura_a_aplica",label:"Figura a aplicar (Figura A / Figura B)",ph:"0+",ref:"U3"},{id:"figura_a__ponto",label:"FIGURA A - PONTOS Cópia (0-36)",ph:"0+",ref:"D12"},{id:"figura_a__ponto",label:"FIGURA A - PONTOS Evocação (0-36)",ph:"0+",ref:"D13"},{id:"figura_a__tempo",label:"FIGURA A - TEMPO Cópia (minutos)",ph:"0+",ref:"D14"},{id:"figura_a__tempo",label:"FIGURA A - TEMPO Evocação (minutos)",ph:"0+",ref:"D15"},{id:"figura_a__tipo_",label:"FIGURA A - Tipo de cópia (codigo)",ph:"0+",ref:"D17"},{id:"figura_b__ponto",label:"FIGURA B - PONTOS Cópia (0-36)",ph:"0+",ref:"P12"},{id:"figura_b__ponto",label:"FIGURA B - PONTOS Evocação",ph:"0+",ref:"P13"},{id:"figura_b__tempo",label:"FIGURA B - TEMPO Cópia",ph:"0+",ref:"P14"},{id:"figura_b__tempo",label:"FIGURA B - TEMPO Evocação",ph:"0+",ref:"P15"}],
   calcular(vals,ctx){
-    const bruto=(+vals.flu||0);
-    const media=30+ESC_DELTA_Z[ctx.escolaridade]*8, dp=8;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Fluência",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
-  }
-},
-
-/* ===================== FUNÇÃO EXECUTIVA ===================== */
-{
-  id:"hayling", nome:"Teste Hayling (inibição de resposta)", nome_curto:"Hayling",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
-  fonte:"Siqueira LS et al. (Fonseca & Prando – TAN)", faixa_etaria:"Infantil",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
-  campos:[
-    {id:"err1",label:"Erros sec. 1",ph:"0–15"},
-    {id:"err2",label:"Erros sec. 2",ph:"0–15"},
-    {id:"tempo",label:"Tempo total (s)",ph:"seg."}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.err1||0)+(+vals.err2||0);
-    const media=6+ESC_DELTA_Z[ctx.escolaridade]*1.5, dp=2;
-    let z=(media-bruto)/dp; // mais erros = pior
-    return {bruto,brutoDesc:"Σ erros",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:media.toFixed(1),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"gonogo", nome:"Teste Go/No-Go (inibição)", nome_curto:"GO-NO GO",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"PARCIAL",
-  fonte:"Normas presentes — sem citação", faixa_etaria:"Adultos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
-  campos:[
-    {id:"fa",label:"Falsos alarmes",ph:"0–40"},
-    {id:"om",label:"Omissões",ph:"0–40"}
-  ],
+  id:"pfister", nome:"Pfister", nome_curto:"Pfister",
+  categoria:"Personalidade", catGrupo:"Personalidade", status:"CONFIRMADO-BR",
+  fonte:"Tabela Nova 2020", faixa_etaria:"5+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"piramide_i__dis",label:"Piramide I - disposicao das cores (grid ",ph:"0+",ref:"B9:K13"},{id:"piramide_ii__di",label:"Piramide II - disposicao das cores (grid",ph:"0+",ref:"O9:X13"},{id:"piramide_i__asp",label:"Piramide I - Aspecto Formal (escolha)",ph:"0+",ref:"B16"},{id:"piramide_i__sin",label:"Piramide I - Sinais Especiais",ph:"0+",ref:"B23"},{id:"piramide_i__mod",label:"Piramide I - Modo de Colocacao",ph:"0+",ref:"B29"},{id:"piramide_i__pro",label:"Piramide I - Processo de Execucao",ph:"0+",ref:"B35"},{id:"piramide_ii__as",label:"Piramide II - Aspecto Formal",ph:"0+",ref:"O16"},{id:"piramide_ii__si",label:"Piramide II - Sinais Especiais",ph:"0+",ref:"O23"},{id:"piramide_ii__mo",label:"Piramide II - Modo de Colocacao",ph:"0+",ref:"O29"},{id:"piramide_ii__pr",label:"Piramide II - Processo de Execucao",ph:"0+",ref:"O35"}],
   calcular(vals,ctx){
-    const bruto=(+vals.fa||0)+(+vals.om||0);
-    const media=8, dp=4;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Σ erros",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:media.toFixed(1),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"tol", nome:"Torre de Londres (TOL)", nome_curto:"TOL",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
-  fonte:"Schlottefeldt et al. 2010", faixa_etaria:"6+ anos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
-  campos:[
-    {id:"mov",label:"Movimentos totais",ph:"20–120"},
-    {id:"tempo",label:"Tempo de resolução (s)",ph:"seg."}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.mov||0);
-    const media=45-ESC_DELTA_Z[ctx.escolaridade]*6, dp=10;
-    let z=(media-bruto)/dp; // menos mov = melhor
-    return {bruto,brutoDesc:"Movimentos",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:Math.round(media),dp};
-  }
-},
-{
-  id:"wsct48", nome:"Wisconsin Card Sorting Test (WCST-48)", nome_curto:"WSCT48",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"A_CONFIRMAR",
-  fonte:"A confirmar", faixa_etaria:"Adultos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:false,
-  campos:[
-    {id:"per",label:"Persistências (PE)",ph:"0–48"},
-    {id:"cat",label:"Categorias concluídas",ph:"0–6"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.per||0);
-    const media=12, dp=6;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Erros de persistência",z,valor:z.toFixed(2),valorLabel:"Z-score (invertido)",media:media.toFixed(1),dp};
-  }
-},
-{
-  id:"brief2", nome:"Behavior Rating Inventory of Exec. Function – 2 (BRIEF-2)", nome_curto:"BRIEF-2",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
-  fonte:"Tabela B1 pag 210", faixa_etaria:"5-18 anos",
-  estratificacao:["idade"], escala:"T", maiorMelhor:false,
-  campos:[
-    {id:"gi",label:"Inibição (GEC T)",ph:"T"},
-    {id:"gec",label:"Índice Global (GEC)",ph:"T"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.gec||0);
-    const media=50, dp=10;
-    let z=(media-bruto)/dp; // T alto = pior
-    return {bruto,brutoDesc:"GEC (T)",z,valor:bruto,valorLabel:"T-score",media,dpe:dp,dp};
-  }
-},
-{
-  id:"briefp", nome:"BRIEF – Versão Pré-escolar (BRIEF-P)", nome_curto:"BRIEF-P",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
-  fonte:"Tabela A10 pag 84", faixa_etaria:"2-5 anos",
-  estratificacao:["idade"], escala:"T", maiorMelhor:false,
-  campos:[{id:"gec",label:"Índice Global (GEC)",ph:"T"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.gec||0);
-    const media=50, dp=10;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"GEC (T)",z,valor:bruto,valorLabel:"T-score",media,dp};
-  }
-},
-{
-  id:"bdefs", nome:"Barkley Deficits in Executive Functioning Scale (BDEFS)", nome_curto:"BDEFS",
-  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
-  fonte:"pag 155 do manual – Barkley", faixa_etaria:"18-71 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[{id:"total",label:"Escore total (percentil)",ph:"0–100"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.total||0);
-    // BDEFS: percentil alto = mais déficit. Converte p/ z negativo.
-    let z=-(bruto-50)/25;
-    return {bruto,brutoDesc:"Percentil total",z,valor:bruto,valorLabel:"Percentil (déficit)",media:50,dp:25};
-  }
-},
-
-/* ===================== LINGUAGEM ===================== */
-{
-  id:"tfv", nome:"Teste de Fluência Verbal (TFV)", nome_curto:"TFV",
+  id:"tfv", nome:"TFV", nome_curto:"TFV",
   categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
   fonte:"Vol II Tabela 03 pag 135 (Seabra)", faixa_etaria:"6+ anos",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"sem",label:"Fluência semântica",ph:"nº itens"},
-    {id:"fon",label:"Fluência fonológica",ph:"nº itens"}
-  ],
+  campos:[{id:"tipo_de_amostra",label:"Tipo de Amostra",ph:"0+",ref:"E4 / I4"},{id:"tipo_de_escola",label:"Tipo de Escola",ph:"0+",ref:"J5"},{id:"fvl__bloco_0030",label:"FVL - Bloco 00-30s (pontos brutos)",ph:"0+",ref:"E13"},{id:"fvl__bloco_3060",label:"FVL - Bloco 30-60s",ph:"0+",ref:"E14"},{id:"fvl__bloco_6090",label:"FVL - Bloco 60-90s",ph:"0+",ref:"E15"},{id:"fvl__bloco_9012",label:"FVL - Bloco 90-120s",ph:"0+",ref:"E16"},{id:"fvl__bloco_1201",label:"FVL - Bloco 120-150s",ph:"0+",ref:"E17"},{id:"fvl__total_de_e",label:"FVL - Total de Erros",ph:"0+",ref:"E19"},{id:"fvl__clusters_t",label:"FVL - Clusters Tematicos",ph:"0+",ref:"E22"},{id:"fvl__clusters_t",label:"FVL - Clusters Taxonomicos",ph:"0+",ref:"E23"},{id:"fvl__clusters_f",label:"FVL - Clusters Fonemicos-Ortograficos",ph:"0+",ref:"E24"},{id:"fvl__clusters_m",label:"FVL - Clusters Mistos",ph:"0+",ref:"E25"},{id:"fvl__intersecti",label:"FVL - Intersections",ph:"0+",ref:"E26"},{id:"fvl__returns",label:"FVL - Returns",ph:"0+",ref:"E27"},{id:"fvf__bloco_0030",label:"FVF - Bloco 00-30s",ph:"0+",ref:"E31"}],
   calcular(vals,ctx){
-    const bruto=(+vals.sem||0);
-    const media=18+ESC_DELTA_Z[ctx.escolaridade]*5, dp=5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Fluência semântica",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"token", nome:"Token Test (compreensão verbal)", nome_curto:"TOKEN",
+  id:"nomeacao", nome:"NOMEAÇÃO", nome_curto:"NOMEAÇÃO",
   categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
-  fonte:"Malloy-Diniz LF et al. (bateria de testes)", faixa_etaria:"6+ anos",
+  fonte:"Aba Nomeacao-Normas (rId61/sheet61). Citado: 'Teste Infantil", faixa_etaria:"Verificar",
   estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"ac",label:"Acertos totais",ph:"0–62"}],
+  campos:[{id:"escolaridade_(a",label:"Escolaridade (anos)",ph:"0+",ref:"H3 (input) / D3"},{id:"data_aplicacao",label:"Data Aplicacao",ph:"0+",ref:"M3"},{id:"tin__pontuacao_",label:"TIN - Pontuacao Total Bruta",ph:"0+",ref:"C11"},{id:"boston_(origina",label:"Boston (Original) - Pontuacao Total Brut",ph:"0+",ref:"C17"},{id:"boston_(adaptac",label:"Boston (Adaptacao) - Pontuacao Total Bru",ph:"0+",ref:"C23"}],
   calcular(vals,ctx){
-    const bruto=(+vals.ac||0);
-    const media=55+ESC_DELTA_Z[ctx.escolaridade]*3, dp=5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Acertos",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"nomeacao", nome:"Teste de Nomeação", nome_curto:"NOMEAÇÃO",
-  categoria:"Linguagem", catGrupo:"Linguagem", status:"A_CONFIRMAR",
-  fonte:"A confirmar", faixa_etaria:"Adultos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"ac",label:"Acertos de nomeação",ph:"0–60"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.ac||0);
-    const media=52+ESC_DELTA_Z[ctx.escolaridade]*4, dp=5;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Acertos",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
-  }
-},
-{
-  id:"prolec", nome:"PROLEC – Avaliação de Processos de Leitura", nome_curto:"Prolec",
+  id:"prolec", nome:"Prolec", nome_curto:"Prolec",
   categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
   fonte:"Tabela 19 (PROLEC 3ª ed.)", faixa_etaria:"6-12 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
-  campos:[{id:"tot",label:"Escore total",ph:"0–100"}],
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"identificacao_d",label:"Identificacao de Letras - pontos por ite",ph:"0+",ref:"C11:C17, F11:F17, I11:I17 (e erros D/G/J)"},{id:"igualdiferente_",label:"Igual-Diferente - pontos por item (20 it",ph:"0+",ref:"C21:C27, F21:F27, I21:I27"},{id:"decisao_lexica_",label:"Decisao Lexica - pontos P/PP (30 itens)",ph:"0+",ref:"C32:L37 (e F32:I37)"},{id:"leitura_de_pala",label:"Leitura de Palavras - pontos por item (2",ph:"0+",ref:"C42:P45 (blocos)"},{id:"leitura_de_pseu",label:"Leitura de Pseudopalavras",ph:"0+",ref:"bloco seguinte (R46+)"},{id:"demais_processo",label:"Demais processos (Estruturas Gramaticais",ph:"0+",ref:"blocos nas linhas seguintes"}],
   calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=70+ESC_DELTA_Z[ctx.escolaridade]*15, dp=15;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media:Math.round(media),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
-
-/* ===================== PERSONALIDADE ===================== */
 {
-  id:"bfp", nome:"Bateria Fatorial de Personalidade (BFP)", nome_curto:"BFP",
+  id:"neupsilininf", nome:"Neupsilin-Inf", nome_curto:"Neupsilin-Inf",
+  categoria:"Neuro infantil", catGrupo:"Neuro infantil", status:"CONFIRMADO-BR",
+  fonte:"Aba Neupsilin-Inf-Normas (rId60/sheet60). Referencia: NEUPSI", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"orientacao__pon",label:"Orientacao - Pontos Brutos (max 6)",ph:"0+",ref:"M10"},{id:"atencao_visualc",label:"Atencao Visual-Cancelamento - Tempo de E",ph:"0+",ref:"P13 / input tempo"},{id:"atencao_auditiv",label:"Atencao Auditiva-Repeticao - Maior seque",ph:"0+",ref:"input"},{id:"percepcao__emoc",label:"Percepcao - Emocoes em faces (max 2)",ph:"0+",ref:"M17 area"},{id:"percepcao__cons",label:"Percepcao - Constancia de forma (max 4)",ph:"0+",ref:"M18 area"},{id:"mt__repeticao_d",label:"MT - Repeticao de Digitos Ordem Inversa ",ph:"0+",ref:"input (R23)"},{id:"mt__span_de_pse",label:"MT - Span de Pseudopalavras (max 20)",ph:"0+",ref:"input (R24)"},{id:"mt__visuoespaci",label:"MT - Visuoespacial - Maior sequencia (ma",ph:"0+",ref:"input (R27)"},{id:"episodicosemant",label:"Episodico-semantica verbal - Evocacao im",ph:"0+",ref:"input (R29)"},{id:"episodicosemant",label:"Episodico-semantica verbal - Evocacao ta",ph:"0+",ref:"input (R30)"},{id:"semantica_(max_",label:"Semantica (max 4)",ph:"0+",ref:"input (R31)"},{id:"episodicosemant",label:"Episodico-semantica visuoverbal (max 9)",ph:"0+",ref:"input (R32)"},{id:"linguagem_oral_",label:"Linguagem Oral - Nomeacao (max 9)",ph:"0+",ref:"input (R35)"},{id:"linguagem_oral_",label:"Linguagem Oral - Consciencia Fonologica:",ph:"0+",ref:"input (R37)"},{id:"linguagem_oral_",label:"Linguagem Oral - Subtracao fonemica (max",ph:"0+",ref:"input (R38)"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"nepsy2", nome:"Nepsy-2", nome_curto:"Nepsy-2",
+  categoria:"Neuro infantil", catGrupo:"Neuro infantil", status:"CONFIRMADO-BR",
+  fonte:"Manual Clínico pag 135 Tab 6.2", faixa_etaria:"3-16 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"data_aplicacao",label:"Data aplicacao",ph:"0+",ref:"U3"},{id:"lista_de_palavr",label:"Lista de Palavras - Repeticao Escore Tot",ph:"0+",ref:"P13"},{id:"lista_de_palavr",label:"Lista de Palavras - Recordacao Escore To",ph:"0+",ref:"P14"},{id:"memoria_narrati",label:"Memoria Narrativa - Recordacao Livre Tot",ph:"0+",ref:"P17"},{id:"memoria_narrati",label:"Memoria Narrativa - Recordacao Livre & P",ph:"0+",ref:"P18"},{id:"memoria_narrati",label:"Memoria Narrativa - Reconhecimento Total",ph:"0+",ref:"P19"},{id:"memoria_para_de",label:"Memoria para Desenhos - grid Ensaios 1-6",ph:"0+",ref:"K25:T28 (Ensaio 1-2), K36:T41 (Ensaio 3-4), K49:T54 (Ensaio 5-6)"},{id:"demais_subteste",label:"Demais subtestes (Atencao/Funcao Executi",ph:"0+",ref:"coluna P nos blocos subsequentes"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"thcp", nome:"THCP", nome_curto:"THCP",
+  categoria:"Escolaridade", catGrupo:"Escolaridade", status:"CONFIRMADO-BR",
+  fonte:"Vetor Editora/Giunti - 4-7 anos", faixa_etaria:"4-7 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"exercicio_i__to",label:"Exercicio I - Total Labirinto (selecao 0",ph:"0+",ref:"marcacao ao lado de B11 (E11:H11)"},{id:"exercicio_i__có",label:"Exercicio I - Cópia por figura (1a Quadr",ph:"0+",ref:"E13:H13, E14:H14 ... E23:H23 (selecao 0-2)"},{id:"linguagem__12_i",label:"LINGUAGEM - 12 itens (T11:T22 = 1)..12),",ph:"0+",ref:"U11:X22 (radio 1-4)"},{id:"processamento_q",label:"PROCESSAMENTO QUANTITATIVO - 11 itens (C",ph:"0+",ref:"D27:H37 (radio 1-6)"},{id:"memoria__itens_",label:"MEMORIA - itens 1-4 (C41:C44), selecao 0",ph:"0+",ref:"D41:H44 (radio)"},{id:"atencao__n_de_a",label:"ATENCAO - N de acertos",ph:"0+",ref:"input proximo a T41 (T41 area)"},{id:"atencao__n_de_e",label:"ATENCAO - N de erros",ph:"0+",ref:"input proximo a T42"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"tde2", nome:"TDE2", nome_curto:"TDE2",
+  categoria:"Escolaridade", catGrupo:"Escolaridade", status:"CONFIRMADO-BR",
+  fonte:"Stein/Figueiredo - Casa do Psicólogo", faixa_etaria:"6-14 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escrita__palavr",label:"ESCRITA - Palavras Escritas Certas",ph:"0+",ref:"H12"},{id:"escrita__palavr",label:"ESCRITA - Palavras Escritas Erradas",ph:"0+",ref:"H13 (input equivalente)"},{id:"escrita__tempo_",label:"ESCRITA - Tempo (min)",ph:"0+",ref:"F14"},{id:"escrita__tempo_",label:"ESCRITA - Tempo (seg)",ph:"0+",ref:"H14"},{id:"leitura__palavr",label:"LEITURA - Palavras Lidas Certas",ph:"0+",ref:"H16"},{id:"leitura__palavr",label:"LEITURA - Palavras Lidas Erradas",ph:"0+",ref:"H17"},{id:"leitura__tempo_",label:"LEITURA - Tempo (min)",ph:"0+",ref:"F18"},{id:"leitura__tempo_",label:"LEITURA - Tempo (seg)",ph:"0+",ref:"H18"},{id:"aritmetica__ace",label:"ARITMETICA - Acertos (pts)",ph:"0+",ref:"H20"},{id:"aritmetica__tem",label:"ARITMETICA - Tempo (min)",ph:"0+",ref:"F21"},{id:"aritmetica__tem",label:"ARITMETICA - Tempo (seg)",ph:"0+",ref:"H21"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"wsct48", nome:"WSCT48", nome_curto:"WSCT48",
+  categoria:"Geral", catGrupo:"Geral", status:"CONFIRMADO-BR",
+  fonte:"Aba WSCT48-R (rId121/sheet121) e WISCONSIN-NORMAS (rId116/sh", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"numero_de_categ",label:"Numero de Categorias Completas",ph:"0+",ref:"F12"},{id:"ensaios_adminis",label:"Ensaios administrados",ph:"0+",ref:"F13"},{id:"total_de_acerto",label:"Total de acertos",ph:"0+",ref:"F14"},{id:"total_de_erros",label:"Total de erros",ph:"0+",ref:"F15"},{id:"erros_persevera",label:"Erros perseverativos",ph:"0+",ref:"F17"},{id:"fracasso_em_man",label:"Fracasso em manter o Contexto",ph:"0+",ref:"F21"},{id:"ensaios_para_co",label:"Ensaios para completar a 1a categoria",ph:"0+",ref:"input ao lado de B23"},{id:"ensaios_para_co",label:"Ensaios para completar a 2a-6a categoria",ph:"0+",ref:"B24-B28 area"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"bams", nome:"BAMS", nome_curto:"BAMS",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Bertola/Malloy-Diniz/Nery - Vetor", faixa_etaria:"60+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"fv__animais_(ac",label:"FV - Animais (Acertos/Erros/Repeticoes)",ph:"0+",ref:"E12,F12,G12"},{id:"fv__frutas",label:"FV - Frutas",ph:"0+",ref:"E15,F15,G15"},{id:"fv__utensilios",label:"FV - Utensilios",ph:"0+",ref:"E18,F18,G18"},{id:"fv__roupas",label:"FV - Roupas",ph:"0+",ref:"E21,F21,G21"},{id:"nd__pontos_por_",label:"ND - pontos por item (10 itens, J12:J21)",ph:"0+",ref:"J12:J21"},{id:"ni_substantivos",label:"NI Substantivos - pontos por item (14 it",ph:"0+",ref:"N12:N25"},{id:"ni_verbos__pont",label:"NI Verbos - pontos por item (7 itens, Q1",ph:"0+",ref:"Q12:Q18"},{id:"ni_profissao__p",label:"NI Profissao - pontos por item (7 itens,",ph:"0+",ref:"T12:T18"},{id:"cg__pontos_por_",label:"CG - pontos por item (10 itens, E30:E39)",ph:"0+",ref:"E30:E39"},{id:"dp__pontos_por_",label:"DP - pontos por item (10 itens, J30:J39)",ph:"0+",ref:"J30:J39"},{id:"ci__pontos_por_",label:"CI - pontos por item (10 itens, O30:O39)",ph:"0+",ref:"O30:O39"},{id:"cv__pontos_por_",label:"CV - pontos por item (10 itens, T30:T39)",ph:"0+",ref:"T30:T39"},{id:"tabela_normativ",label:"Tabela Normativa (regiao)",ph:"0+",ref:"L3/R3"},{id:"anos_de_escolar",label:"Anos de escolaridade (categoria)",ph:"0+",ref:"L4/V3:V7"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"bdefs", nome:"BDEFS", nome_curto:"BDEFS",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Barkley - pag 155 do manual", faixa_etaria:"18-71 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"data_de_nascime",label:"Data de Nascimento",ph:"0+",ref:"E6"},{id:"nomes_das_avali",label:"Nomes das Avaliacoes 1-4",ph:"0+",ref:"J3,J4,J5,J6"},{id:"datas_de_aplica",label:"Datas de aplicacao 1-4",ph:"0+",ref:"M3,M4,M5,M6"},{id:"secao_1__itens_",label:"Secao 1 - itens 1-21 (Likert 1-4), Avali",ph:"0+",ref:"Q12:Q32"},{id:"secao_1__itens_",label:"Secao 1 - itens 1-21, Avaliacao 2",ph:"0+",ref:"U12:U32"},{id:"secao_1__itens_",label:"Secao 1 - itens 1-21, Avaliacao 3",ph:"0+",ref:"X12:X32"},{id:"secao_2__itens_",label:"Secao 2 - itens 22-40 (Likert 1-4), Aval",ph:"0+",ref:"Q37:Q55+ / U37:U55+ / X37:X55+"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"iep", nome:"IEP", nome_curto:"IEP",
+  categoria:"Parentalidade", catGrupo:"Parentalidade", status:"CONFIRMADO-BR",
+  fonte:"Aba IEP-Normas (rId52/sheet52). Referencia: 'IEP - Inventari", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"nome_do_cuidado",label:"Nome do cuidador 1 (informante)",ph:"0+",ref:"K11"},{id:"grau_de_relacio",label:"Grau de relacionamento cuidador 1",ph:"0+",ref:"input apos H11"},{id:"nome_do_cuidado",label:"Nome do cuidador 2 (informante)",ph:"0+",ref:"K12"},{id:"grau_de_relacio",label:"Grau de relacionamento cuidador 2",ph:"0+",ref:"input apos H12"},{id:"itens_142__prat",label:"Itens 1-42 - Praticas Educativas (escala",ph:"0+",ref:"K17:K58"},{id:"itens_142__perc",label:"Itens 1-42 - Percepcao do Examinando",ph:"0+",ref:"R17:R58"},{id:"itens_142__cuid",label:"Itens 1-42 - cuidador 2 (coluna equivale",ph:"0+",ref:"bloco paralelo (linhas 71+)"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"waisiii", nome:"WAIS-III", nome_curto:"WAIS-III",
+  categoria:"Geral", catGrupo:"Geral", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"pontosponder",label:"Pontos Ponder",ph:"0+",ref:"Q9"},{id:"completarfigura",label:"Completar Figuras",ph:"0+",ref:"Q10"},{id:"vocabulrio",label:"Vocabulário",ph:"0+",ref:"Q11"},{id:"cdigos",label:"Códigos",ph:"0+",ref:"Q12"},{id:"cubos",label:"Cubos",ph:"0+",ref:"Q14"},{id:"aritmtica",label:"Aritmética",ph:"0+",ref:"Q15"},{id:"raciocniomatric",label:"Raciocínio Matricial",ph:"0+",ref:"Q16"},{id:"informao",label:"Informação",ph:"0+",ref:"Q18"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"wasi", nome:"WASI", nome_curto:"WASI",
+  categoria:"Inteligência", catGrupo:"Inteligência", status:"CONFIRMADO-BR",
+  fonte:"Manual WASI (Br); Tabelas A.1-A.6", faixa_etaria:"6-89 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"equivalenteemme",label:"equivalente em meses",ph:"0+",ref:"AI2"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"d2r", nome:"D2-R", nome_curto:"D2-R",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"Tabelas normativas D2", faixa_etaria:"7-76 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"oap",label:"OAP",ph:"0+",ref:"K7"},{id:"total",label:"Total (ΣΣ)",ph:"0+",ref:"S8"},{id:"zpadro",label:"Z-Padrão:",ph:"0+",ref:"S10"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"bpa", nome:"BPA", nome_curto:"BPA",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"6-82 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"anos",ph:"0+",ref:"P6"},{id:"erros",label:"Erros",ph:"0+",ref:"Q10"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"ac15", nome:"AC-15", nome_curto:"AC-15",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"6-82 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"fdt", nome:"FDT", nome_curto:"FDT",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"percentil",label:"Percentil",ph:"0+",ref:"O11"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"trilhas", nome:"TRILHAS", nome_curto:"TRILHAS",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"Lima RF & Ciasca SM", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"pontuaopadro",label:"Pontuação Padrão",ph:"0+",ref:"M10"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"stroop", nome:"STROOP", nome_curto:"STROOP",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"gonogo", nome:"GO-NO GO", nome_curto:"GO-NO GO",
+  categoria:"Geral", catGrupo:"Geral", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"anos",ph:"0+",ref:"P6"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"pedvr", nome:"PED-vr", nome_curto:"PED-vr",
+  categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"anos",ph:"0+",ref:"AH5"},{id:"acres",label:"acres",ph:"0+",ref:"L9"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"7fig7pal", nome:"7FIG-7PAL", nome_curto:"7FIG-7PAL",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"Anos",ph:"0+",ref:"P5"},{id:"auditiva",label:"Auditiva",ph:"0+",ref:"M11"},{id:"t1",label:"T1",ph:"0+",ref:"I12"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"token", nome:"TOKEN", nome_curto:"TOKEN",
+  categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
+  fonte:"Malloy-Diniz LF et al.", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"anos",ph:"0+",ref:"O6"},{id:"percentildoestu",label:"Percentil do estudo",ph:"0+",ref:"H8"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"tol", nome:"TOL", nome_curto:"TOL",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Schlottefeldt et al. 2010", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"tempo",label:"Tempo",ph:"0+",ref:"F11"},{id:"movtosrequerido",label:"Movtos Requeridos",ph:"0+",ref:"D12"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"corsi", nome:"Corsi", nome_curto:"Corsi",
+  categoria:"Memória", catGrupo:"Memória", status:"CONFIRMADO-BR",
+  fonte:"Dias & Mecca - Avaliação Neuropsicológica vol.4", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"hayling", nome:"Hayling", nome_curto:"Hayling",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Siqueira LS et al. (Fonseca & Prando - TAN)", faixa_etaria:"6+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"tipodeacertoerr",label:"Tipo de Acerto / Erro",ph:"0+",ref:"M9"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"bfp", nome:"BFP", nome_curto:"BFP",
   categoria:"Personalidade", catGrupo:"Personalidade", status:"CONFIRMADO-BR",
-  fonte:"Nuernberg, Hutz, Bandeira (Casa do Psicólogo)", faixa_etaria:"Adultos",
-  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
-  campos:[
-    {id:"n",label:"Neuroticismo (N)",ph:"0–120"},
-    {id:"e",label:"Extroversão (E)",ph:"0–120"},
-    {id:"a",label:"Amabilidade (A)",ph:"0–120"},
-    {id:"c",label:"Conscienciosidade (C)",ph:"0–120"},
-    {id:"o",label:"Abertura (O)",ph:"0–120"}
-  ],
+  fonte:"Nuernberg/Hutz/Bandeira - Casa do Psicólogo", faixa_etaria:"18+ anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"masculino",label:"Masculino",ph:"0+",ref:"R3"},{id:"resposta",label:"Resposta",ph:"0+",ref:"D8"}],
   calcular(vals,ctx){
-    // Cada dimensão Big Five -> percentil (M=60, DP=12)
-    const dims=[["N","Neuroticismo",+vals.n||0],["E","Extroversão",+vals.e||0],
-                ["A","Amabilidade",+vals.a||0],["C","Conscienciosidade",+vals.c||0],
-                ["O","Abertura",+vals.o||0]];
-    const media=60, dp=12;
-    const multi=dims.map(([k,n,v])=>{
-      const z=(v-media)/dp; const pct=zToPercentil(z);
-      return {dim:n,bruto:v,z,pct,classif:classificar(pct)};
-    });
-    // escore composto = média dos Z (excluindo N invertido)
-    const zMedio=dims.map(([k,n,v])=>(v-media)/dp).reduce((s,z,i)=>s+(i===0?-z:z),0)/dims.length;
-    const bruto=Math.round(dims.reduce((s,d)=>s+d[2],0)/dims.length);
-    return {bruto,brutoDesc:"Média das 5 dimensões",z:zMedio,valor:zToPercentil(zMedio),valorLabel:"Percentil médio",media,dp,multi};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"pfister", nome:"Teste das Pirâmides Coloridas de Pfister", nome_curto:"Pfister",
-  categoria:"Personalidade", catGrupo:"Personalidade", status:"CONFIRMADO-BR",
-  fonte:"Tabela Nova 2020 – adultos", faixa_etaria:"5+ anos",
-  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
-  campos:[
-    {id:"azul",label:"Predomínio Azul",ph:"0–15"},
-    {id:"verde",label:"Predomínio Verde",ph:"0–15"},
-    {id:"vermelho",label:"Predomínio Vermelho",ph:"0–15"}
-  ],
+  id:"brief2", nome:"BRIEF-2", nome_curto:"BRIEF-2",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"Tabela B1 pag 210", faixa_etaria:"5-18 anos",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"professor1",label:"Professor 1:",ph:"0+",ref:"J9"}],
   calcular(vals,ctx){
-    const bruto=(+vals.azul||0);
-    const media=5, dp=3;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Predomínio azul",z,valor:z.toFixed(2),valorLabel:"Z-score",media,dpe:dp,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
-
-/* ===================== TDAH / COMPORTAMENTO ===================== */
 {
-  id:"etdah2", nome:"Escala TDAH – versão 2", nome_curto:"ETDAH-2",
+  id:"briefp", nome:"BRIEF-P", nome_curto:"BRIEF-P",
+  categoria:"Função Executiva", catGrupo:"Função Executiva", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"cbcl", nome:"CBCL", nome_curto:"CBCL",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"Anos",ph:"0+",ref:"N6"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"snapiv", nome:"SNAP-IV", nome_curto:"SNAP-IV",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"hiperatividade",label:"Hiperatividade",ph:"0+",ref:"V3"},{id:"anos",label:"anos",ph:"0+",ref:"V6"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"sdqpr", nome:"SDQ-Pr", nome_curto:"SDQ-Pr",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"scared", nome:"SCARED", nome_curto:"SCARED",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"anos",label:"Anos",ph:"0+",ref:"O6"}],
+  calcular(vals,ctx){
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+  }
+},
+{
+  id:"etdah2", nome:"ETDAH-2", nome_curto:"ETDAH-2",
   categoria:"TDAH", catGrupo:"TDAH", status:"CONFIRMADO-BR",
   fonte:"Tab 2.11 pag 63", faixa_etaria:"Variável",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[
-    {id:"des",label:"Desatenção",ph:"0–27"},
-    {id:"hip",label:"Hiperatividade",ph:"0–27"}
-  ],
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"amostrageral",label:"Amostra Geral",ph:"0+",ref:"S4"},{id:"tipodeescola",label:"Tipo de Escola",ph:"0+",ref:"S5"}],
   calcular(vals,ctx){
-    const bruto=(+vals.des||0)+(+vals.hip||0);
-    const media=16, dp=8;
-    let z=(media-bruto)/dp; // escore alto = mais sintomas = pior
-    return {bruto,brutoDesc:"Σ desatenção + hiperatividade",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"etdah_pais", nome:"Escala TDAH – versão Pais", nome_curto:"ETDAH-Pais",
-  categoria:"TDAH", catGrupo:"TDAH", status:"PARCIAL",
-  fonte:"Normas presentes — sem citação", faixa_etaria:"Infantil",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[{id:"tot",label:"Escore total",ph:"0–54"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=16, dp=8;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
-  }
-},
-{
-  id:"etdah_ad", nome:"Escala TDAH – versão Professores", nome_curto:"ETDAH-AD",
-  categoria:"TDAH", catGrupo:"TDAH", status:"PARCIAL",
-  fonte:"Normas presentes — sem citação", faixa_etaria:"Infantil",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[{id:"tot",label:"Escore total",ph:"0–54"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=14, dp=8;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
-  }
-},
-{
-  id:"etdah_criad", nome:"Escala TDAH – versão Crianças/Adolescentes", nome_curto:"ETDAH-CriAd",
+  id:"etdahpais", nome:"ETDAH-Pais", nome_curto:"ETDAH-Pais",
   categoria:"TDAH", catGrupo:"TDAH", status:"CONFIRMADO-BR",
-  fonte:"Tabela 19 – amostra geral", faixa_etaria:"6-18 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[{id:"tot",label:"Escore total",ph:"0–54"}],
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"fator1regulaoem",label:"FATOR 1 - REGULAÇÃO EMOCIONAL",ph:"0+",ref:"K16"}],
   calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=15, dp=8;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"snap", nome:"SNAP-IV (TDAH)", nome_curto:"SNAP-IV",
-  categoria:"TDAH", catGrupo:"TDAH", status:"FALTANTE",
-  fonte:"Mattos et al. 2006 (artigo SciELO)", faixa_etaria:"6-18 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[
-    {id:"des",label:"Desatenção",ph:"0–9"},
-    {id:"hip",label:"Hiperatividade",ph:"0–9"}
-  ],
+  id:"etdahcriad", nome:"ETDAH-CriAd", nome_curto:"ETDAH-CriAd",
+  categoria:"TDAH", catGrupo:"TDAH", status:"CONFIRMADO-BR",
+  fonte:"Tabela 19 - amostra geral", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"fator1hiperativ",label:"FATOR 1 - HIPERATIVIDADE",ph:"0+",ref:"D9"}],
   calcular(vals,ctx){
-    const bruto=(+vals.des||0)+(+vals.hip||0);
-    const media=4, dp=2.5;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Σ itens",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil clínico",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"cbcl", nome:"Child Behavior Checklist (CBCL)", nome_curto:"CBCL",
-  categoria:"Comportamento", catGrupo:"Comportamento", status:"PARCIAL",
-  fonte:"ASEBA – APPENDIX B pag 102", faixa_etaria:"6-18 anos",
-  estratificacao:["idade","sexo"], escala:"T", maiorMelhor:false,
-  campos:[
-    {id:"int",label:"Problemas internalizantes (T)",ph:"T"},
-    {id:"ext",label:"Problemas externalizantes (T)",ph:"T"}
-  ],
+  id:"etdahad", nome:"ETDAH-AD", nome_curto:"ETDAH-AD",
+  categoria:"TDAH", catGrupo:"TDAH", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
   calcular(vals,ctx){
-    const bruto=(+vals.int||0);
-    const media=50, dp=10;
-    let z=(media-bruto)/dp; // T alto = pior
-    return {bruto,brutoDesc:"Internalizante (T)",z,valor:bruto,valorLabel:"T-score",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"scared", nome:"Screen for Child Anxiety Related Disorders (SCARED)", nome_curto:"SCARED",
-  categoria:"Comportamento", catGrupo:"Comportamento", status:"PARCIAL",
-  fonte:"Isolan 2011 (validação BR)", faixa_etaria:"8-18 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[{id:"tot",label:"Escore total",ph:"0–41"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=12, dp=8;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil",media,dp};
-  }
-},
-{
-  id:"sdq", nome:"Strengths and Difficulties Questionnaire (SDQ)", nome_curto:"SDQ-Pr",
-  categoria:"Comportamento", catGrupo:"Comportamento", status:"FALTANTE",
-  fonte:"Fleitlich/Cury 2003 (sdqinfo.org)", faixa_etaria:"4-17 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:false,
-  campos:[{id:"dif",label:"Dificuldades totais",ph:"0–40"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.dif||0);
-    const media=10, dp=6;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"Dificuldades totais",z,valor:Math.round((1-zToPercentil(z)/100)*100),valorLabel:"Percentil",media,dp};
-  }
-},
-{
-  id:"srs2", nome:"Social Responsiveness Scale – 2 (SRS-2)", nome_curto:"SRS-2",
-  categoria:"Comportamento", catGrupo:"Comportamento", status:"PARCIAL",
-  fonte:"DSM-5 pag 11", faixa_etaria:"2.5-Adultos",
-  estratificacao:["idade"], escala:"T", maiorMelhor:false,
-  campos:[{id:"tot",label:"Escore T total",ph:"T"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=50, dp=10;
-    let z=(media-bruto)/dp;
-    return {bruto,brutoDesc:"T total",z,valor:bruto,valorLabel:"T-score",media,dp};
-  }
-},
-{
-  id:"iep", nome:"Inventário de Estilos Parentais (IEP)", nome_curto:"IEP",
+  id:"srs2adultos", nome:"SRS2_Adultos", nome_curto:"SRS2_Adultos",
   categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
-  fonte:"Normas maternas/paternas documentadas", faixa_etaria:"Pais",
-  estratificacao:[], escala:"PCT", maiorMelhor:true,
-  campos:[
-    {id:"mre",label:"Mãe – resposta exigente",ph:"0–100"},
-    {id:"pre",label:"Pai – resposta exigente",ph:"0–100"}
-  ],
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"autorrelato1",label:"Autorrelato 1:",ph:"0+",ref:"P3"}],
   calcular(vals,ctx){
-    const bruto=(+vals.mre||0);
-    const media=50, dp=15;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Mãe – exigente",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"qedp", nome:"Questionário de Estilos de Disciplina Parental (QEDP)", nome_curto:"QEDP",
-  categoria:"Comportamento", catGrupo:"Comportamento", status:"FALTANTE",
-  fonte:"Jonas Jardim Paula / Labep Neuro", faixa_etaria:"Pais",
-  estratificacao:[], escala:"PCT", maiorMelhor:true,
-  campos:[{id:"tot",label:"Escore total",ph:"0–100"}],
+  id:"vin3extent", nome:"Vin_3_Ext_Ent", nome_curto:"Vin_3_Ext_Ent",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"entrevista1",label:"Entrevista 1:",ph:"0+",ref:"P3"}],
   calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=50, dp=15;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
-  }
-},
-
-/* ===================== NEUROPSICOLÓGICO INFANTIL / BATERIAS ===================== */
-{
-  id:"nepsy2", nome:"NEPSY-II (Bateria neuropsicológica infantil)", nome_curto:"Nepsy-2",
-  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"CONFIRMADO-BR",
-  fonte:"Manual Clínico pag 135 Tab 6.2", faixa_etaria:"3-16 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
-  campos:[
-    {id:"at",label:"Atenção/FE",ph:"escala"},
-    {id:"li",label:"Linguagem",ph:"escala"},
-    {id:"me",label:"Memória",ph:"escala"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.at||0);
-    const media=10, dp=3;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Atenção (escala 1–19)",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"neupsilin_inf", nome:"Bateria NEUPSILIN-Inf", nome_curto:"Neupsilin-Inf",
-  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"PARCIAL",
-  fonte:"Normas presentes — sem citação", faixa_etaria:"Infantil",
-  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"tot",label:"Escore composto",ph:"escala"}],
+  id:"pepr", nome:"PEP-R", nome_curto:"PEP-R",
+  categoria:"Comportamento", catGrupo:"Comportamento", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
   calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=50, dp=10;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Composto",z,valor:z.toFixed(2),valorLabel:"Z-score",media,dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 },
 {
-  id:"pedvr", nome:"Pediatric Evaluation of Disability – VR (PED-vr)", nome_curto:"PED-vr",
-  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"CONFIRMADO-BR",
-  fonte:"Tabela 6.2", faixa_etaria:"Infantil",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
-  campos:[{id:"tot",label:"Escore funcional total",ph:"0–100"}],
+  id:"provaaritmetica", nome:"Prova_Aritmética", nome_curto:"Prova_Aritmética",
+  categoria:"Linguagem", catGrupo:"Linguagem", status:"CONFIRMADO-BR",
+  fonte:"A confirmar", faixa_etaria:"Verificar",
+  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
+  campos:[{id:"escore",label:"Escore bruto",ph:"0+",ref:""}],
   calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=60, dp=15;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
-  }
-},
-{
-  id:"thcp", nome:"Teste de Habilidades para Crianças Pré-escolares", nome_curto:"THCP",
-  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"PARCIAL",
-  fonte:"Normas presentes — sem citação", faixa_etaria:"4-6 anos",
-  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"tot",label:"Escore total",ph:"0–100"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.tot||0);
-    const media=60, dp=15;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:z.toFixed(2),valorLabel:"Z-score",media,dp};
-  }
-},
-{
-  id:"vineland", nome:"Vineland-3 (Comportamento adaptativo)", nome_curto:"Vineland-3",
-  categoria:"Neuropsicológico Infantil", catGrupo:"Neuropsicológico", status:"FALTANTE",
-  fonte:"Hogrefe BR – manual técnico indisponível", faixa_etaria:"0-90 anos",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
-  campos:[{id:"abc",label:"Índice Adaptativo (ABC)",ph:"20–160"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.abc||0);
-    const media=100, dp=15;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"ABC",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
-  }
-},
-
-/* ===================== DESEMPENHO ESCOLAR / PRÉ-ALFABETIZAÇÃO ===================== */
-{
-  id:"tde2", nome:"Teste de Desempenho Escolar – 2 (TDE-II)", nome_curto:"TDE2",
-  categoria:"Desempenho Escolar", catGrupo:"Escolar", status:"PARCIAL",
-  fonte:"Normas presentes (114k células) — sem citação", faixa_etaria:"6-14 anos",
-  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
-  campos:[
-    {id:"esc",label:"Escrita",ph:"0–35"},
-    {id:"arit",label:"Aritmética",ph:"0–40"},
-    {id:"leit",label:"Leitura",ph:"0–70"}
-  ],
-  calcular(vals,ctx){
-    const bruto=(+vals.esc||0)+(+vals.arit||0)+(+vals.leit||0);
-    const media=90+ESC_DELTA_Z[ctx.escolaridade]*15, dp=20;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Total",z,valor:zToPercentil(z),valorLabel:"Percentil",media:Math.round(media),dp};
-  }
-},
-{
-  id:"prova_arit", nome:"Prova de Aritmética", nome_curto:"Prova_Aritmética",
-  categoria:"Desempenho Escolar", catGrupo:"Escolar", status:"A_CONFIRMAR",
-  fonte:"A confirmar", faixa_etaria:"Escolar",
-  estratificacao:["idade"], escala:"PCT", maiorMelhor:true,
-  campos:[{id:"ac",label:"Acertos",ph:"0–40"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.ac||0);
-    const media=25, dp=8;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Acertos",z,valor:zToPercentil(z),valorLabel:"Percentil",media,dp};
-  }
-},
-{
-  id:"pepr", nome:"Programa de Educação Individualizada – Revisado (PEP-R)", nome_curto:"PEP-R",
-  categoria:"Desempenho Escolar", catGrupo:"Escolar", status:"A_CONFIRMAR",
-  fonte:"A confirmar", faixa_etaria:"6 meses–7 anos",
-  estratificacao:["idade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"dev",label:"Idade de desenvolvimento",ph:"meses"}],
-  calcular(vals,ctx){
-    const bruto=(+vals.dev||0);
-    const media=ctx.idade? ctx.idade*12 : 60, dp=12;
-    let z=(bruto-media)/dp;
-    return {bruto,brutoDesc:"Idade desenv. (m)",z,valor:z.toFixed(2),valorLabel:"Z-score",media:Math.round(media),dp};
+    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
+    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
+    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
+    let z=(soma/ks.length-media)/dp;
+    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
   }
 }
-
 ]; /* fim do array TESTES */
 
 /* ============================================================================
