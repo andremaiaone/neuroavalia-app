@@ -467,6 +467,308 @@
 <div class="toast" id="toast"></div>
 
 <script>
+const TAB_CONVERSAO_MESTRA=[
+  {z:-10.0,percentil:"< 0,10",classificacao:"Deficitário"},
+  {z:-3.9999,percentil:"0.1",classificacao:"Deficitário"},
+  {z:-3.0,percentil:"0.1",classificacao:"Deficitário"},
+  {z:-2.9999,percentil:"0.5",classificacao:"Deficitário"},
+  {z:-2.669,percentil:"1",classificacao:"Deficitário"},
+  {z:-2.199,percentil:"2",classificacao:"Deficitário"},
+  {z:-1.959,percentil:"3",classificacao:"Deficitário"},
+  {z:-1.819,percentil:"4",classificacao:"Deficitário"},
+  {z:-1.699,percentil:"5",classificacao:"Limítrofe"},
+  {z:-1.599,percentil:"6",classificacao:"Limítrofe"},
+  {z:-1.519,percentil:"7",classificacao:"Limítrofe"},
+  {z:-1.439,percentil:"8",classificacao:"Limítrofe"},
+  {z:-1.379,percentil:"9",classificacao:"Média Inferior"},
+  {z:-1.319,percentil:"10",classificacao:"Média Inferior"},
+  {z:-1.259,percentil:"11",classificacao:"Média Inferior"},
+  {z:-1.209,percentil:"12",classificacao:"Média Inferior"},
+  {z:-1.159,percentil:"13",classificacao:"Média Inferior"},
+  {z:-1.109,percentil:"14",classificacao:"Média Inferior"},
+  {z:-1.059,percentil:"15",classificacao:"Média Inferior"},
+  {z:-1.019,percentil:"16",classificacao:"Média Inferior"},
+  {z:-0.979,percentil:"17",classificacao:"Média Inferior"},
+  {z:-0.939,percentil:"18",classificacao:"Média Inferior"},
+  {z:-0.899,percentil:"19",classificacao:"Média Inferior"},
+  {z:-0.859,percentil:"20",classificacao:"Média Inferior"},
+  {z:-0.829,percentil:"21",classificacao:"Média Inferior"},
+  {z:-0.789,percentil:"22",classificacao:"Média Inferior"},
+  {z:-0.759,percentil:"23",classificacao:"Média Inferior"},
+  {z:-0.729,percentil:"24",classificacao:"Média Inferior"},
+  {z:-0.699,percentil:"25",classificacao:"Média"},
+  {z:-0.659,percentil:"26",classificacao:"Média"},
+  {z:-0.629,percentil:"27",classificacao:"Média"},
+  {z:-0.599,percentil:"28",classificacao:"Média"},
+  {z:-0.569,percentil:"29",classificacao:"Média"},
+  {z:-0.539,percentil:"30",classificacao:"Média"},
+  {z:-0.519,percentil:"31",classificacao:"Média"},
+  {z:-0.489,percentil:"32",classificacao:"Média"},
+  {z:-0.459,percentil:"33",classificacao:"Média"},
+  {z:-0.429,percentil:"34",classificacao:"Média"},
+  {z:-0.399,percentil:"",classificacao:"Média"},
+  {z:-0.379,percentil:"36",classificacao:"Média"},
+  {z:-0.349,percentil:"37",classificacao:"Média"},
+  {z:-0.319,percentil:"38",classificacao:"Média"},
+  {z:-0.299,percentil:"39",classificacao:"Média"},
+  {z:-0.269,percentil:"40",classificacao:"Média"},
+  {z:-0.249,percentil:"41",classificacao:"Média"},
+  {z:-0.219,percentil:"42",classificacao:"Média"},
+  {z:-0.189,percentil:"43",classificacao:"Média"},
+  {z:-0.169,percentil:"44",classificacao:"Média"},
+  {z:-0.139,percentil:"45",classificacao:"Média"},
+  {z:-0.119,percentil:"46",classificacao:"Média"},
+  {z:0.089,percentil:"47",classificacao:"Média"},
+  {z:-0.069,percentil:"48",classificacao:"Média"},
+  {z:-0.039,percentil:"49",classificacao:"Média"},
+  {z:-0.019,percentil:"50",classificacao:"Média"},
+  {z:0.02,percentil:"51",classificacao:"Média"},
+  {z:0.04,percentil:"52",classificacao:"Média"},
+  {z:0.07,percentil:"53",classificacao:"Média"},
+  {z:0.09,percentil:"54",classificacao:"Média"},
+  {z:0.12,percentil:"55",classificacao:"Média"},
+  {z:0.14,percentil:"56",classificacao:"Média"},
+  {z:0.17,percentil:"57",classificacao:"Média"},
+  {z:0.19,percentil:"58",classificacao:"Média"},
+  {z:0.22,percentil:"59",classificacao:"Média"},
+  {z:0.25,percentil:"60",classificacao:"Média"},
+  {z:0.27,percentil:"61",classificacao:"Média"},
+  {z:0.3,percentil:"62",classificacao:"Média"},
+  {z:0.32,percentil:"63",classificacao:"Média"},
+  {z:0.35,percentil:"64",classificacao:"Média"},
+  {z:0.38,percentil:"65",classificacao:"Média"},
+  {z:0.4,percentil:"66",classificacao:"Média"},
+  {z:0.43,percentil:"67",classificacao:"Média"},
+  {z:0.46,percentil:"68",classificacao:"Média"},
+  {z:0.49,percentil:"69",classificacao:"Média"},
+  {z:0.52,percentil:"70",classificacao:"Média"},
+  {z:0.54,percentil:"71",classificacao:"Média"},
+  {z:0.57,percentil:"72",classificacao:"Média"},
+  {z:0.6,percentil:"73",classificacao:"Média"},
+  {z:0.63,percentil:"74",classificacao:"Média"},
+  {z:0.66,percentil:"75",classificacao:"Média Superior"},
+  {z:0.7,percentil:"76",classificacao:"Média Superior"},
+  {z:0.73,percentil:"77",classificacao:"Média Superior"},
+  {z:0.76,percentil:"78",classificacao:"Média Superior"},
+  {z:0.79,percentil:"79",classificacao:"Média Superior"},
+  {z:0.83,percentil:"80",classificacao:"Média Superior"},
+  {z:0.86,percentil:"81",classificacao:"Média Superior"},
+  {z:0.9,percentil:"82",classificacao:"Média Superior"},
+  {z:0.94,percentil:"83",classificacao:"Média Superior"},
+  {z:0.98,percentil:"84",classificacao:"Média Superior"},
+  {z:1.02,percentil:"85",classificacao:"Média Superior"},
+  {z:1.06,percentil:"86",classificacao:"Média Superior"},
+  {z:1.11,percentil:"87",classificacao:"Média Superior"},
+  {z:1.16,percentil:"88",classificacao:"Média Superior"},
+  {z:1.21,percentil:"89",classificacao:"Média Superior"},
+  {z:1.26,percentil:"90",classificacao:"Média Superior"},
+  {z:1.32,percentil:"91",classificacao:"Superior"},
+  {z:1.38,percentil:"92",classificacao:"Superior"},
+  {z:1.44,percentil:"93",classificacao:"Superior"},
+  {z:1.52,percentil:"94",classificacao:"Superior"},
+  {z:1.6,percentil:"95",classificacao:"Superior"},
+  {z:1.7,percentil:"96",classificacao:"Superior"},
+  {z:1.82,percentil:"97",classificacao:"Superior"},
+  {z:1.96,percentil:"98",classificacao:"Muito Superior"},
+  {z:2.2,percentil:"99",classificacao:"Muito Superior"},
+  {z:2.67,percentil:"99.5",classificacao:"Muito Superior"},
+  {z:3.0,percentil:">99,91",classificacao:"Muito Superior"}
+];
+
+const TABELA_AC=[
+  {escore:0,classificacao:"Inferior",percentil:"< 1"},
+  {escore:1,classificacao:"Inferior",percentil:"< 1"},
+  {escore:2,classificacao:"Inferior",percentil:"< 1"},
+  {escore:3,classificacao:"Inferior",percentil:"< 1"},
+  {escore:4,classificacao:"Inferior",percentil:"< 1"},
+  {escore:5,classificacao:"Inferior",percentil:"< 1"},
+  {escore:6,classificacao:"Inferior",percentil:"< 1"},
+  {escore:7,classificacao:"Inferior",percentil:"< 1"},
+  {escore:8,classificacao:"Inferior",percentil:"< 1"},
+  {escore:9,classificacao:"Inferior",percentil:"< 1"},
+  {escore:10,classificacao:"Inferior",percentil:"< 1"},
+  {escore:11,classificacao:"Inferior",percentil:"< 1"},
+  {escore:12,classificacao:"Inferior",percentil:"< 1"},
+  {escore:13,classificacao:"Inferior",percentil:"< 1"},
+  {escore:14,classificacao:"Inferior",percentil:"< 1"},
+  {escore:15,classificacao:"Inferior",percentil:"< 1"},
+  {escore:16,classificacao:"Inferior",percentil:"< 1"},
+  {escore:17,classificacao:"Inferior",percentil:"< 1"},
+  {escore:18,classificacao:"Inferior",percentil:"< 1"},
+  {escore:19,classificacao:"Inferior",percentil:"< 1"},
+  {escore:20,classificacao:"Inferior",percentil:"< 1"},
+  {escore:21,classificacao:"Inferior",percentil:"< 1"},
+  {escore:22,classificacao:"Inferior",percentil:"< 1"},
+  {escore:23,classificacao:"Inferior",percentil:"< 1"},
+  {escore:24,classificacao:"Inferior",percentil:"< 1"},
+  {escore:25,classificacao:"Inferior",percentil:"1"},
+  {escore:26,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:27,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:28,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:29,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:30,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:31,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:32,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:33,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:34,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:35,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:36,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:37,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:38,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:39,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:40,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:41,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:42,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:43,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:44,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:45,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:46,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:47,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:48,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:49,classificacao:"Inferior",percentil:"> 1 e < 5"},
+  {escore:50,classificacao:"Inferior",percentil:"5"},
+  {escore:51,classificacao:"Inferior",percentil:"> 5 e < 10"},
+  {escore:52,classificacao:"Inferior",percentil:"> 5 e < 10"},
+  {escore:53,classificacao:"Médio Inferior",percentil:"> 5 e < 10"},
+  {escore:54,classificacao:"Médio Inferior",percentil:"> 5 e < 10"},
+  {escore:55,classificacao:"Médio Inferior",percentil:"> 5 e < 10"},
+  {escore:56,classificacao:"Médio Inferior",percentil:"> 5 e < 10"},
+  {escore:57,classificacao:"Médio Inferior",percentil:"> 5 e < 10"},
+  {escore:58,classificacao:"Médio Inferior",percentil:"> 5 e < 10"},
+  {escore:59,classificacao:"Médio Inferior",percentil:"10"},
+  {escore:60,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:61,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:62,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:63,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:64,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:65,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:66,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:67,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:68,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:69,classificacao:"Médio Inferior",percentil:"> 10 e < 20"},
+  {escore:70,classificacao:"Médio",percentil:"20"},
+  {escore:71,classificacao:"Médio",percentil:"> 20 e < 25"},
+  {escore:72,classificacao:"Médio",percentil:"> 20 e < 25"},
+  {escore:73,classificacao:"Médio",percentil:"> 20 e < 25"},
+  {escore:74,classificacao:"Médio",percentil:"25"},
+  {escore:75,classificacao:"Médio",percentil:"> 25 e < 30"},
+  {escore:76,classificacao:"Médio",percentil:"> 25 e < 30"},
+  {escore:77,classificacao:"Médio",percentil:"> 25 e < 30"},
+  {escore:78,classificacao:"Médio",percentil:"30"},
+  {escore:79,classificacao:"Médio",percentil:"> 30 e < 40"},
+  {escore:80,classificacao:"Médio",percentil:"> 30 e < 40"},
+  {escore:81,classificacao:"Médio",percentil:"> 30 e < 40"},
+  {escore:82,classificacao:"Médio",percentil:"> 30 e < 40"},
+  {escore:83,classificacao:"Médio",percentil:"> 30 e < 40"},
+  {escore:84,classificacao:"Médio",percentil:"40"},
+  {escore:85,classificacao:"Médio",percentil:"> 40 e < 50"},
+  {escore:86,classificacao:"Médio",percentil:"> 40 e < 50"},
+  {escore:87,classificacao:"Médio",percentil:"> 40 e < 50"},
+  {escore:88,classificacao:"Médio",percentil:"> 40 e < 50"},
+  {escore:89,classificacao:"Médio",percentil:"> 40 e < 50"},
+  {escore:90,classificacao:"Médio",percentil:"50"},
+  {escore:91,classificacao:"Médio",percentil:"> 50 e < 60"},
+  {escore:92,classificacao:"Médio",percentil:"> 50 e < 60"},
+  {escore:93,classificacao:"Médio",percentil:"> 50 e < 60"},
+  {escore:94,classificacao:"Médio",percentil:"> 50 e < 60"},
+  {escore:95,classificacao:"Médio Superior",percentil:"> 50 e < 60"},
+  {escore:96,classificacao:"Médio Superior",percentil:"> 50 e < 60"},
+  {escore:97,classificacao:"Médio Superior",percentil:"60"},
+  {escore:98,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:99,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:100,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:101,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:102,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:103,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:104,classificacao:"Médio Superior",percentil:"> 60 e < 70"},
+  {escore:105,classificacao:"Médio Superior",percentil:"70"},
+  {escore:106,classificacao:"Médio Superior",percentil:"> 70 e < 75"},
+  {escore:107,classificacao:"Médio Superior",percentil:"> 70 e < 75"},
+  {escore:108,classificacao:"Médio Superior",percentil:"75"},
+  {escore:109,classificacao:"Médio Superior",percentil:"> 75 e < 80"},
+  {escore:110,classificacao:"Médio Superior",percentil:"> 75 e < 80"},
+  {escore:111,classificacao:"Médio Superior",percentil:"> 75 e < 80"},
+  {escore:112,classificacao:"Médio Superior",percentil:"> 75 e < 80"},
+  {escore:113,classificacao:"Médio Superior",percentil:"80"},
+  {escore:114,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:115,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:116,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:117,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:118,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:119,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:120,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:121,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:122,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:123,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:124,classificacao:"Médio Superior",percentil:"> 80 e < 90"},
+  {escore:125,classificacao:"Superior",percentil:"90"},
+  {escore:126,classificacao:"Superior",percentil:"> 90 e < 95"},
+  {escore:127,classificacao:"Superior",percentil:"> 90 e < 95"},
+  {escore:128,classificacao:"Superior",percentil:"> 90 e < 95"},
+  {escore:129,classificacao:"Superior",percentil:"> 90 e < 95"},
+  {escore:130,classificacao:"Superior",percentil:"> 90 e < 95"},
+  {escore:131,classificacao:"Superior",percentil:"> 90 e < 95"}
+];
+
+
+// === MOTOR DE CÁLCULO REAL (fiel à planilha PsychoSys) ===
+
+// Lookup por Z-score na tabela mestra (igual ao LOOKUP do Excel)
+function lookupZ(z) {
+  // Tab_Conversao está ordenada por Z crescente
+  // LOOKUP do Excel: encontra o maior valor <= z
+  let resultado = TAB_CONVERSAO_MESTRA[0];
+  for (let i = 0; i < TAB_CONVERSAO_MESTRA.length; i++) {
+    if (TAB_CONVERSAO_MESTRA[i].z <= z) {
+      resultado = TAB_CONVERSAO_MESTRA[i];
+    } else {
+      break;
+    }
+  }
+  return resultado;
+}
+
+// Lookup por escore direto (AC: escore → percentil)
+function lookupAC(escore) {
+  let resultado = TABELA_AC[0];
+  for (let i = 0; i < TABELA_AC.length; i++) {
+    if (TABELA_AC[i].escore <= escore) {
+      resultado = TABELA_AC[i];
+    } else {
+      break;
+    }
+  }
+  return resultado;
+}
+
+// Cálculo real: Z → percentil → classificação (usando tabela mestra)
+function calcularPorZ(z) {
+  const tab = lookupZ(z);
+  const pct = parseFloat((tab.percentil || "50").toString().replace(",",".").replace(">","").replace("<","")) || 50;
+  return {
+    z: z,
+    valor: Math.round(100 + z * 15),
+    valorLabel: "QI composto",
+    percentil: pct,
+    classificacao: tab.classificacao || "Média"
+  };
+}
+
+// Cálculo AC: escore bruto → tabela direta
+function calcularAC(pontos) {
+  const tab = lookupAC(pontos);
+  const pct = parseFloat((tab.percentil || "50").toString().replace(",",".").replace(">","").replace("<","")) || 50;
+  return {
+    bruto: pontos,
+    brutoDesc: "Pontos (A-E-O)",
+    percentil: pct,
+    classificacao: tab.classificacao || "Média",
+    valor: pct,
+    valorLabel: "Percentil direto"
+  };
+}
+
+
 /* ============================================================================
    PSYCHOSYS V4.0 — MOTOR DE CORREÇÃO MODULAR
    ---------------------------------------------------------------------------
@@ -670,7 +972,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -685,22 +987,29 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
-  id:"ac", nome:"Teste de Atenção Concentrada (AC)", nome_curto:"Teste de Atenção Con",
+  id:"ac", nome:"Teste de Atenção Concentrada (AC)", nome_curto:"AC",
   categoria:"Atenção", catGrupo:"Atenção", status:"CONFIRMADO-BR",
   fonte:"Cambraia SV - Vetor 2018", faixa_etaria:"6-82 anos",
-  estratificacao:["idade","escolaridade"], escala:"Z", maiorMelhor:true,
-  campos:[{id:"acertos",label:"Acertos",ph:"0+",ref:"C14"},{id:"erros",label:"Erros",ph:"0+",ref:"D14"},{id:"omissões",label:"Omissões",ph:"0+",ref:"E14"}],
+  estratificacao:["idade","escolaridade"], escala:"PCT", maiorMelhor:true,
+  campos:[
+    {id:"ac",label:"A — Acertos",ph:"0–180",ref:"C14"},
+    {id:"er",label:"E — Erros",ph:"0–180",ref:"D14"},
+    {id:"om",label:"O — Omissões",ph:"0–180",ref:"E14"}
+  ],
   calcular(vals,ctx){
-    const ks=Object.keys(vals).filter(k=>vals[k]&&vals[k]!=="");
-    if(ks.length===0) return {erro:"Preencha ao menos 1 campo"};
+    const a=(+vals.ac||0), e=(+vals.er||0), o=(+vals.om||0);
+    const pontos=a-e-o;
+    if(pontos<0) return {erro:"Pontos (A-E-O) negativo: verifique"};
+    return calcularAC(pontos);
+  };
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -715,7 +1024,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -730,7 +1039,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -745,7 +1054,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -760,7 +1069,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -775,7 +1084,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -790,7 +1099,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -805,7 +1114,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -820,7 +1129,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -835,7 +1144,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -850,7 +1159,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -865,7 +1174,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -880,7 +1189,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -895,7 +1204,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -910,7 +1219,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -925,7 +1234,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -940,7 +1249,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -955,7 +1264,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -970,7 +1279,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -985,7 +1294,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1000,7 +1309,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1015,7 +1324,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1030,7 +1339,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1045,7 +1354,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1060,7 +1369,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1075,7 +1384,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1090,7 +1399,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1105,7 +1414,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1120,7 +1429,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1135,7 +1444,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1150,7 +1459,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1165,7 +1474,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1180,7 +1489,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1195,7 +1504,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1210,7 +1519,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1225,7 +1534,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1240,7 +1549,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1255,7 +1564,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1270,7 +1579,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1285,7 +1594,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1300,7 +1609,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1315,7 +1624,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1330,7 +1639,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1345,7 +1654,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1360,7 +1669,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
@@ -1375,7 +1684,7 @@ const TESTES = [
     const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
     const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
     let z=(soma/ks.length-media)/dp;
-    return {bruto:Math.round(soma/ks.length),brutoDesc:"Média dos escores",z,valor:Math.round(50+z*10),valorLabel:"T-score aproximado",media:Math.round(media),dp};
+    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 }
 ]; /* fim do array TESTES */
