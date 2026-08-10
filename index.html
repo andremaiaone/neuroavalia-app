@@ -1005,11 +1005,6 @@ const TESTES = [
     const pontos=a-e-o;
     if(pontos<0) return {erro:"Pontos (A-E-O) negativo: verifique"};
     return calcularAC(pontos);
-  };
-    const soma=ks.reduce((s,k)=>s+(+vals[k]||0),0);
-    const media=50+ESC_DELTA_Z[ctx.escolaridade]*10, dp=10;
-    let z=(soma/ks.length-media)/dp;
-    const _r=calcularPorZ(z);_r.bruto=Math.round(soma/ks.length);_r.brutoDesc='Média dos escores';_r.media=Math.round(media);_r.dp=dp;return _r;
   }
 },
 {
